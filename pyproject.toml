@@ -7,6 +7,8 @@ license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.7"
+trio-websocket = "^0.8.0"
+ujson = "^1.35"
 
 [tool.poetry.dev-dependencies]
 pip = "^19.3"
