@@ -21,10 +21,8 @@ class BitMEXWebsocket:
         self.ws = None
     
     async def start(self):
-        connection = connect(self.endpoint, self.symbol, self.api_key, self.api_secret)
-        async for message in self.storage.process():
-            if not self.ws:
-                self.ws = message
-            else:
-                yield message
+        stream  = self.storage.process(connect(self.endpoint, self.symbol, self.api_key, self.api_secret))
+        self.ws = await stream.asend(None)
+        async for message in stream:
+            yield message
     
