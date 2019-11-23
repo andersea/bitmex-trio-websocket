@@ -26,7 +26,7 @@ Websocket implementation for BitMEX cryptocurrency derivatives exchange.
 Features
 --------
 
-* TODO
+* None. Literally. This is just a skeleton project.
 
 Credits
 -------
