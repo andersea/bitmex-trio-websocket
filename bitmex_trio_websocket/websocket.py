@@ -4,13 +4,13 @@
 import logging
 
 from trio_websocket import open_websocket_url
-from ujson import loads #pylint: disable=no-name-in-module
+from ujson import loads
 
 from .auth import generate_expires, generate_signature
 
 logger = logging.getLogger(__name__)
 
-async def connect(endpoint, symbol, api_key=None, api_secret=None):
+async def connect(endpoint, symbol=None, api_key=None, api_secret=None):
     """Start a BitMEX websocket connection."""
     try:
         if endpoint == 'mainnet':
@@ -20,9 +20,14 @@ async def connect(endpoint, symbol, api_key=None, api_secret=None):
 
         # We can subscribe right in the connection querystring, so let's build that.
         # Subscribe to all pertinent endpoints
-        subscriptions = [sub + ':' + symbol for sub in ['instrument', 'quote', 'trade', 'tradeBin1m']]
-        subscriptions += [sub + ':' + symbol for sub in ['order', 'execution']]
-        subscriptions += ['margin', 'position']
+        subscriptions = []
+        if symbol:
+            if isinstance(symbol, str):
+                symbol = [symbol]
+            for s in symbol:
+                subscriptions += [sub + ':' + s for sub in ['instrument', 'quote', 'trade', 'tradeBin1m']]
+        if api_key and api_secret:
+            subscriptions += ['margin', 'position', 'order', 'execution']
         url += '?subscribe=' + ','.join(subscriptions)
 
         logger.debug('Generating authentication headers.')
