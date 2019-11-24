@@ -9,7 +9,7 @@ from trio_websocket import WebSocketConnection
 
 __author__ = """Anders Ellenshøj Andersen"""
 __email__ = 'andersa@atlab.dk'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 class BitMEXWebsocket:
     def __init__(self, endpoint: str, symbol: Union[str, Iterable[str]]=None, api_key: str=None, api_secret: str=None):
