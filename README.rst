@@ -7,7 +7,7 @@ BitMEX Trio-Websocket
         :target: https://pypi.python.org/pypi/bitmex_trio_websocket
 
 .. image:: https://img.shields.io/travis/andersea/bitmex_trio_websocket.svg
-        :target: https://travis-ci.org/andersea/bitmex_trio_websocket
+        :target: https://travis-ci.com/andersea/bitmex-trio-websocket
 
 .. image:: https://readthedocs.org/projects/bitmex-trio-websocket/badge/?version=latest
         :target: https://bitmex-trio-websocket.readthedocs.io/en/latest/?badge=latest
