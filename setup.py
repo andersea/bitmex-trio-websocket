@@ -15,7 +15,7 @@ requirements = [ ]
 
 setup_requirements = ['pytest-runner', ]
 
-test_requirements = ['pytest>=3', ]
+test_requirements = ['pytest>=3', 'poetry>=0.12', ]
 
 setup(
     author="Anders Ellenshøj Andersen",
