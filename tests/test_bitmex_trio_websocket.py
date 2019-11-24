@@ -6,7 +6,7 @@
 import pytest
 
 
-from bitmex_trio_websocket import bitmex_trio_websocket
+from bitmex_trio_websocket import BitMEXWebsocket
 
 
 @pytest.fixture
