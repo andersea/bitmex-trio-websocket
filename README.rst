@@ -26,7 +26,10 @@ Websocket implementation for BitMEX cryptocurrency derivatives exchange.
 Features
 --------
 
-* None. Literally. This is just a skeleton project.
+* Connects to BitMEX websockets for a given symbol or lists of symbols.
+* Supports authenticated connections using api keys.
+* Fully async using async generators. No callbacks or event emitters.
+* Based on trio and trio-websocket.
 
 Credits
 -------
