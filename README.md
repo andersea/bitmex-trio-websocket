@@ -73,15 +73,15 @@ Api key for authenticated connections. If a valid api key and secret is supplied
 
 Api secret for authenticated connections.
 
-![await start](https://img.shields.io/badge/await-start()-darkgreen)
+![await start](https://img.shields.io/badge/await-start()-green)
 
 Returns an async generator object that yields messages from the websocket.
 
-![storage](https://img.shields.io/badge/property-storage-404040)
+![storage](https://img.shields.io/badge/attribute-storage-teal)
 
-This property contains the storage object for the websocket. The storage object has two properties `data` and `keys`. `data` contains the table state for each channel as a dictionary with the table name as key. The tables themselves are flat lists. `keys` contains a list of keys by which to look up values in each table. There is a helper function `findItemByKeys` in the storage unit, which assists in finding particular items in each table. Tables are searched sequentially until a match is found, with is somewhat inefficient. However since there is never a lot of records in each table (at most 200), this is reasonably fast in practice and not a bottleneck.
+This attribute contains the storage object for the websocket. The storage object has two properties `data` and `keys`. `data` contains the table state for each channel as a dictionary with the table name as key. The tables themselves are flat lists. `keys` contains a list of keys by which to look up values in each table. There is a helper function `findItemByKeys` in the storage unit, which assists in finding particular items in each table. Tables are searched sequentially until a match is found, with is somewhat inefficient. However since there is never a lot of records in each table (at most 200), this is reasonably fast in practice and not a bottleneck.
 
-![ws](https://img.shields.io/badge/property-ws-404040)
+![ws](https://img.shields.io/badge/attribute-ws-teal)
 
 When connected, contains the underlying trio-websocket object. Can be used to manage the connection.
 
