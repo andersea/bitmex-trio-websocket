@@ -53,6 +53,8 @@ Note, that delete actions are simply applied and consumed, with no output sent.
 
 ![bitmex__trio__websocket.BitMEXWebsocket](https://img.shields.io/badge/class-bitmex__trio__websocket.BitMEXWebsocket-blue?style=flat-square)
 
+<div style="padding-left: 2em;">
+
 ![constructor](https://img.shields.io/badge/constructor-BitMEXWebsocket(endpoint%2C%20symbol%2C%20api__key%2C%20api__secret)-blue)
 
 Creates a new websocket object.
@@ -86,6 +88,7 @@ This attribute contains the storage object for the websocket. The storage object
 When connected, contains the underlying trio-websocket object. Can be used to manage the connection.
 
 See - https://trio-websocket.readthedocs.io/en/stable/api.html#connections
+</div>
 
 ## Credits
 
