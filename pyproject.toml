@@ -4,6 +4,19 @@ version = "0.2.7"
 description = "Websocket implementation for BitMEX cryptocurrency derivatives exchange."
 authors = ["Anders Ellenshøj Andersen <andersa@ellenshoej.dk>"]
 license = "MIT"
+homepage = "https://github.com/andersea/bitmex-trio-websocket"
+readme = "README.md"
+keywords = ["BitMEX", "Trio", "Websocket", "async"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Framework :: Trio",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+]
 
 [tool.poetry.dependencies]
 python = "^3.7"
