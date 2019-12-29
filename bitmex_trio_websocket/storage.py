@@ -15,11 +15,14 @@ class Storage:
     async def process(self, ws):
         # Yields the connection itself for outsiders.
         yield await ws.asend(None)
-        # Processes the rest of the messages messages
+        # Processes the rest of the messages
+        logger.debug('First iteration.')
         async for message in ws:
 
             table = message['table'] if 'table' in message else None
             action = message['action'] if 'action' in message else None
+
+            logger.debug('Received %s message for table %s.', action, table)
 
             if table not in self.data:
                 self.data[table] = []
@@ -100,6 +103,8 @@ class Storage:
                     self.data[table].remove(item)
             else:
                 raise Exception("Unknown action: %s" % action)
+
+            logger.debug('Next iteration.')
 
     def get_instrument(self, symbol):
         instruments = self.data['instrument']

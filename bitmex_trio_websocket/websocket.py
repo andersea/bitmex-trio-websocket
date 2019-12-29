@@ -47,7 +47,12 @@ async def connect(endpoint, symbol=None, api_key=None, api_secret=None):
             # Yields the websocket itself as the first value, so outsiders can access it.
             yield ws
             while True:
-                message = loads(await ws.get_message())
+                logger.debug('Getting next raw message from websocket.')
+                raw_message = await ws.get_message()
+                logger.debug('->')
+                logger.debug(raw_message)
+                logger.debug('-|')
+                message = loads(raw_message)
                 if 'info' in message:
                     logger.debug('Connected to BitMEX realtime api.')
                 elif 'subscribe' in message:
