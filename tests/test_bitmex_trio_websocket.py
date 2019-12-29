@@ -7,7 +7,7 @@ import os
 from trio import sleep
 from random import random
 from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionClosed
-from bitmex_trio_websocket import connect
+from bitmex_trio_websocket import BitMEXWebsocket, connect
 
 async def test_auth_fail():
     await sleep(random())
@@ -44,4 +44,14 @@ async def test_multisymbol():
                 print(count)
                 await ws.aclose()
     except ConnectionClosed:
+        assert True
+
+async def test_context_manager():
+    async with BitMEXWebsocket.connect('testnet', ['XBTUSD', 'ETHUSD'], os.getenv('TESTNET_API_KEY'), os.getenv('TESTNET_API_SECRET')) as bitmex_ws:
+        count = 0
+        async for msg in bitmex_ws:
+            count += 1
+            print(count)
+            if count >= 10:
+                break
         assert True
