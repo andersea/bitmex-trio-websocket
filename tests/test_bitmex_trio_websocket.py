@@ -42,6 +42,6 @@ async def test_multisymbol():
             count += 1
             if count >= 100:
                 print(count)
-                await ws.close()
+                await ws.aclose()
     except ConnectionClosed:
         assert True
