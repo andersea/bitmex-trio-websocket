@@ -32,8 +32,9 @@ class BitMEXWebsocket:
             bitmex_websocket.trio_websocket = await stream.__anext__()
             ready.set()
             try:
-                async for message in stream:
-                    await send_channel.send(message)
+                async with send_channel:
+                    async for message in stream:
+                        await send_channel.send(message)
             finally:
                 await bitmex_websocket.trio_websocket.aclose()
         
