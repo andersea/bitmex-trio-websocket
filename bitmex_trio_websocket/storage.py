@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import decimal
 import logging
 import typing
@@ -54,8 +55,18 @@ class Storage:
                 self.data[table] += message['data']
 
                 # Limit the max length of the table to avoid excessive memory usage.
-                # Don't trim orders because we'll lose valuable state if we do.
-                if table not in ['order', 'orderBookL2'] and len(self.data[table]) > self.MAX_TABLE_LEN:
+                if table == 'order':
+                    # Trim closed orders that are older than a minute - Filled orders
+                    # can be reopened by amending leavesQty within a minute. After that
+                    # we can delete them.
+                    self.data[table] = [
+                        i for i in self.data[table]
+                        if i['leavesQty'] <= 0 and (datetime.now(timezone.utc) - parse_timestamp(i['timestamp'])).total_seconds() > 60
+                    ]
+                elif table == 'orderBookL2':
+                    # Don't trim the order book because we'll lose valuable state if we do.
+                    pass
+                elif len(self.data[table]) > self.MAX_TABLE_LEN:
                     self.data[table] = self.data[table][(self.MAX_TABLE_LEN // 2):]
 
                 for item in message['data']:
@@ -74,10 +85,6 @@ class Storage:
 
                     # Update this item.
                     item.update(updateData)
-
-                    # Remove canceled / filled orders
-                    if table == 'order' and item['leavesQty'] <= 0:
-                        self.data[table].remove(item)
 
                     # Send back the updated item
                     if 'symbol' in item:
@@ -117,3 +124,7 @@ class Storage:
                     matched = False
             if matched:
                 return item
+    
+    @staticmethod
+    def parse_timestamp(timestamp: str) -> datetime:
+        return datetime(timestamp.replace('Z', '+0000'), '%Y-%m-%dT%H:%M:%S.%f%z')
