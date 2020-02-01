@@ -1,5 +1,6 @@
-import logging
 import decimal
+import logging
+import typing
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ class Storage:
                 logger.debug('%s: updating %s', table, message["data"])
                 # Locate the item in the collection and update it.
                 for updateData in message['data']:
-                    item = findItemByKeys(self.keys[table], self.data[table], updateData)
+                    item = self.find_item(table, updateData)
                     if not item:
                         continue  # No item found to update. Could happen before push
 
@@ -99,7 +100,7 @@ class Storage:
                 logger.debug('%s: deleting %s', table, message["data"])
                 # Locate the item in the collection and remove it.
                 for deleteData in message['data']:
-                    item = findItemByKeys(self.keys[table], self.data[table], deleteData)
+                    item = self.find_item(table, deleteData)
                     self.data[table].remove(item)
             else:
                 raise Exception("Unknown action: %s" % action)
@@ -117,11 +118,13 @@ class Storage:
         instrument['tickLog'] = decimal.Decimal(str(instrument['tickSize'])).as_tuple().exponent * -1
         return instrument
 
-def findItemByKeys(keys, table, matchData):
-    for item in table:
-        matched = True
-        for key in keys:
-            if item[key] != matchData[key]:
-                matched = False
-        if matched:
-            return item
+    def find_item(self, table: str, match_data: typing.Mapping[str, typing.Union[str, int, float]):
+        keys = self.keys[table]
+        records = self.data[table]
+        for item in records:
+            matched = True
+            for key in keys:
+                if item[key] != match_data[key]:
+                    matched = False
+            if matched:
+                return item
