@@ -114,7 +114,7 @@ class Storage:
         instrument['tickLog'] = decimal.Decimal(str(instrument['tickSize'])).as_tuple().exponent * -1
         return instrument
 
-    def find_item(self, table: str, match_data: typing.Mapping[str, typing.Union[str, int, float]):
+    def find_item(self, table: str, match_data: typing.Mapping[str, typing.Union[str, int, float]]):
         keys = self.keys[table]
         records = self.data[table]
         for item in records:
