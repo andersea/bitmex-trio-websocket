@@ -49,7 +49,7 @@ async def test_multisymbol():
 async def test_context_manager():
     async with BitMEXWebsocket.connect('testnet', ['XBTUSD', 'ETHUSD'], os.getenv('TESTNET_API_KEY'), os.getenv('TESTNET_API_SECRET')) as bitmex_ws:
         count = 0
-        async for msg in bitmex_ws:
+        async for msg in bitmex_ws.listen('instrument'):
             count += 1
             print(count)
             if count >= 10:
