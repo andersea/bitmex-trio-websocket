@@ -2,10 +2,13 @@
 
 """Top-level package for BitMEX Trio-Websocket."""
 
-from contextlib import asynccontextmanager, AsyncExitStack
-from typing import Union, Iterable, Optional
+from collections import defaultdict
+from contextlib import asynccontextmanager
+from typing import Optional
+import logging
 
 import trio
+import ujson
 
 from .websocket import connect
 from .storage import Storage
@@ -15,50 +18,61 @@ __author__ = """Anders Ellenshøj Andersen"""
 __email__ = 'andersa@atlab.dk'
 __version__ = '0.2.8'
 
+log = logging.getLogger(__name__)
+
 class BitMEXWebsocket:
     def __init__(self):
         self.storage = Storage()
         self.trio_websocket = None
-        self._exit_stack = AsyncExitStack()
-        self._listeners = []
+        self._listeners = defaultdict(list)
         self._listeners_attached = trio.Event()
     
     @staticmethod
     @asynccontextmanager
-    async def connect(endpoint: str, symbol: Union[str, Iterable[str]]=None, channels: Iterable[str]=None, api_key: str=None, api_secret: str=None):
+    async def connect(endpoint: str, api_key: str=None, api_secret: str=None):
 
-        async def run(bitmex_websocket, ready):
-            stream = bitmex_websocket.storage.process(connect(endpoint, symbol, channels, api_key, api_secret))
-            bitmex_websocket.trio_websocket = await stream.__anext__()
-            ready.set()
+        async def process_stream():
+            log.debug('Run task starting.')
+            # log.debug('Websocket connected. Waiting for listeners.')
             await bitmex_websocket._listeners_attached.wait()
-            async for item, item_symbol, item_table, item_action in stream:
-                for listen_table, listen_symbol, send_channel in bitmex_websocket._listeners:
-                    if listen_table == item_table:
-                        if item_symbol:
-                            if not listen_symbol or listen_symbol == item_symbol:
-                                await send_channel.send(item)
-                        else:
-                            await send_channel.send(item)
-                await bitmex_websocket._listeners_attached.wait()
+            try:
+                async for item, item_symbol, item_table, item_action in stream:
+                    for listen_table, listen_symbol in bitmex_websocket._listeners.keys():
+                        if listen_table == item_table:
+                            if item_symbol:
+                                if not listen_symbol or listen_symbol == item_symbol:
+                                    for send_channel in bitmex_websocket._listeners[(listen_table, listen_symbol)]:
+                                        await send_channel.send(item)
+                            else:
+                                for send_channel in bitmex_websocket._listeners[(listen_table, listen_symbol)]:
+                                    await send_channel.send(item)
+            finally:
+                log.debug('Stream processing task done.')
         
         bitmex_websocket = BitMEXWebsocket()
-        ready = trio.Event()
-        async with trio.open_nursery() as nursery, bitmex_websocket._exit_stack:
-            nursery.start_soon(run, bitmex_websocket, ready)
-            await ready.wait()
+
+        async with trio.open_nursery() as nursery:
+            stream = bitmex_websocket.storage.process(connect(nursery, endpoint, api_key, api_secret))
+            bitmex_websocket.trio_websocket = await stream.__anext__()
+            nursery.start_soon(process_stream)
             yield bitmex_websocket
+            log.debug('BitMEXWebsocket context exit. Canceling running tasks.')
             nursery.cancel_scope.cancel()
-    
+        log.debug('BitMEXWebsocket closed.')
+
     async def listen(self, table: str, symbol: Optional[str]=None):
         send_channel, receive_channel = trio.open_memory_channel(0)
-        await self._exit_stack.enter_async_context(send_channel)
-        self._listeners.append((table, symbol, send_channel))
+        listener = (table, symbol)
+        if not listener in self._listeners:
+            topic = table
+            if symbol:
+                topic += f':{symbol}'
+            await self.trio_websocket.send_message(ujson.dumps({'op': 'subscribe', 'args': [topic]}))
+        self._listeners[listener].append(send_channel)
         self._listeners_attached.set()
         try:
-            async for item in receive_channel:
-                yield item
+            while True:
+                yield await receive_channel.receive()
         finally:
-            self._listeners.remove((table, symbol, send_channel))
-            if not self._listeners:
-                self._listeners_attached = trio.Event()
+            log.debug('Listener detached from table: %s, symbol: %s', table, symbol)
+            self._listeners[listener].remove(send_channel)
