@@ -22,6 +22,7 @@ classifiers = [
 python = "^3.7"
 trio-websocket = "^0.8.0"
 ujson = "^1.35"
+sortedcontainers = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 pip = "^19.3"
