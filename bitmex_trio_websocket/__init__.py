@@ -25,10 +25,10 @@ class BitMEXWebsocket:
     
     @staticmethod
     @asynccontextmanager
-    async def connect(endpoint: str, symbol: Union[str, Iterable[str]]=None, api_key: str=None, api_secret: str=None):
+    async def connect(endpoint: str, symbol: Union[str, Iterable[str]]=None, channels: Iterable[str]=None, api_key: str=None, api_secret: str=None):
 
         async def run(bitmex_websocket, ready):
-            stream = bitmex_websocket.storage.process(connect(endpoint, symbol, api_key, api_secret))
+            stream = bitmex_websocket.storage.process(connect(endpoint, symbol, channels, api_key, api_secret))
             bitmex_websocket.trio_websocket = await stream.__anext__()
             ready.set()
             await bitmex_websocket._listeners_attached.wait()

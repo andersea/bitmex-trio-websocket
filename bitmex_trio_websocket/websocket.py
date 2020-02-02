@@ -10,7 +10,7 @@ from .auth import generate_expires, generate_signature
 
 logger = logging.getLogger(__name__)
 
-async def connect(endpoint, symbol=None, api_key=None, api_secret=None):
+async def connect(endpoint, symbol=None, channels=None, api_key=None, api_secret=None):
     """Start a BitMEX websocket connection."""
     try:
         if endpoint == 'mainnet':
@@ -21,11 +21,13 @@ async def connect(endpoint, symbol=None, api_key=None, api_secret=None):
         # We can subscribe right in the connection querystring, so let's build that.
         # Subscribe to all pertinent endpoints
         subscriptions = []
+        if not channels:
+            channels = ['instrument', 'quote', 'tradeBin1m']
         if symbol:
             if isinstance(symbol, str):
                 symbol = [symbol]
             for s in symbol:
-                subscriptions += [sub + ':' + s for sub in ['instrument', 'quote', 'trade', 'tradeBin1m']]
+                subscriptions += [sub + ':' + s for sub in channels]
         if api_key and api_secret:
             subscriptions += ['margin', 'position', 'order', 'execution']
         url += '?subscribe=' + ','.join(subscriptions)
