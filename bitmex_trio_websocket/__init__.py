@@ -56,7 +56,7 @@ class BitMEXWebsocket:
             bitmex_websocket.trio_websocket = await stream.__anext__()
             nursery.start_soon(process_stream)
             yield bitmex_websocket
-            log.debug('BitMEXWebsocket context exit. Canceling running tasks.')
+            log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
             nursery.cancel_scope.cancel()
         log.debug('BitMEXWebsocket closed.')
 
