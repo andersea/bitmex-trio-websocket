@@ -47,10 +47,14 @@ class Storage:
                 self.keys[table] = message['keys']
 
                 if table =='orderBookL2':
+                    # This is used to yield the output. Not sure if only a single symbol
+                    # is included per partial. If so, then finding unique symbols is
+                    # obviously a waste of time.
                     symbols = set()
                     for item in message['data']:
                         symbols.add(item['symbol'])
                         self.orderbook[item['symbol']][item['side']][item['id']] = item
+                    # Yield order book per symbol in the partial.
                     for symbol in symbols:
                         yield (self.orderbook[symbol], symbol, table, action)
                 else:
