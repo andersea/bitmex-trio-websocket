@@ -1,5 +1,11 @@
 # History
 
+## 0.4.0 (2020-02-03)
+
+* Big refactoring.
+* Handles subscriptions individually per channel.
+* Data storage uses sorted containers for search efficiency.
+
 ## 0.2.5 (2019-11-25)
 
 * Documentation fixes.
