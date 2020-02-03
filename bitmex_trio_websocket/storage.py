@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 import decimal
 import logging
-import typing
+from typing import Mapping, Union
 
 from sortedcontainers import SortedDict
 
@@ -137,7 +137,7 @@ class Storage:
 
             logger.debug('Next iteration.')
     
-    def make_key(self, table, match_data):
+    def make_key(self, table: str, match_data: Mapping[str, Union[int, float, str]]) -> tuple:
         return tuple(match_data[key] for key in self.keys[table])
     
     @staticmethod
