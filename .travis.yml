@@ -10,7 +10,6 @@ before_deploy:
 deploy:
   provider: script
   script: poetry publish
-  skip_cleanup: true
   on:
     tags: true
     python: 3.8
