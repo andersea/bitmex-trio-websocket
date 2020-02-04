@@ -12,8 +12,8 @@ Websocket implementation for BitMEX cryptocurrency derivatives exchange.
 
 ## Features
 
-* Automatically subscribes to the appropriate channel, when a stream for that channel is requested.
 * Supports authenticated connections using api keys.
+* Uses SortedDict as backend storage for easy and fast table searching.
 * Fully async using async generators. No callbacks or event emitters.
 * Based on trio and trio-websocket.
 
@@ -65,7 +65,7 @@ Api secret for authenticated connections.
 ![await listen](https://img.shields.io/badge/await-listen(table,%20symbol=None)-green)
 
 Subscribes to the channel and optionally a specific symbol. It is possible for multiple listeners
-to be listening to be using the same subscription.
+to be listening using the same subscription.
 
 Returns an async generator object that yields messages from the channel.
 
