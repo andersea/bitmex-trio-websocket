@@ -12,6 +12,9 @@ log = logging.getLogger(__name__)
 
 async def connect(nursery, endpoint, api_key=None, api_secret=None):
     """Start a BitMEX websocket connection."""
+    if not endpoint in ('mainnet', 'testnet'):
+        raise ValueError('endpoint argument must be either \'mainnet\' or \'testnet\'')
+
     try:
         if endpoint == 'mainnet':
             url = 'wss://www.bitmex.com/realtime'
