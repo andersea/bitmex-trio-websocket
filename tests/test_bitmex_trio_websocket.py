@@ -8,7 +8,7 @@ from random import random
 from trio import sleep, open_nursery
 import ujson
 from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionClosed
-from bitmex_trio_websocket import BitMEXWebsocket, connect
+from bitmex_trio_websocket import BitMEXWebsocket
 
 async def test_auth_fail():
     await sleep(random())
@@ -66,3 +66,14 @@ async def test_orderbook():
         async for msg in bws.listen('orderBookL2', 'XBTUSD'):
             assert len(msg) == 2
             break
+
+async def test_network_argument():
+    async with trio.open_nursery() as nursery:
+        cn = connect(nursery, 'mainnet')
+        assert getattr(cn, '__aiter__', None) is not None
+        cn = connect(nursery, 'testnet')
+        assert getattr(cn, '__aiter__', None) is not None
+        try:
+            connect(nursery, 'incorrect')
+        except Exception as e:
+            assert isinstance(e, ValueError)

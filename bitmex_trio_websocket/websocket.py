@@ -10,30 +10,13 @@ from .auth import generate_expires, generate_signature
 
 log = logging.getLogger(__name__)
 
-async def connect(nursery, endpoint, api_key=None, api_secret=None):
+async def connect(nursery, network, api_key=None, api_secret=None):
     """Start a BitMEX websocket connection."""
-    if not endpoint in ('mainnet', 'testnet'):
-        raise ValueError('endpoint argument must be either \'mainnet\' or \'testnet\'')
-
     try:
-        if endpoint == 'mainnet':
+        if network == 'mainnet':
             url = 'wss://www.bitmex.com/realtime'
         else:
             url = 'wss://testnet.bitmex.com/realtime'
-
-        # We can subscribe right in the connection querystring, so let's build that.
-        # Subscribe to all pertinent endpoints
-        # subscriptions = []
-        # if not channels:
-        #     channels = ['instrument', 'quote', 'tradeBin1m']
-        # if symbol:
-        #     if isinstance(symbol, str):
-        #         symbol = [symbol]
-        #     for s in symbol:
-        #         subscriptions += [sub + ':' + s for sub in channels]
-        # if api_key and api_secret:
-        #     subscriptions += ['margin', 'position', 'order', 'execution']
-        # url += '?subscribe=' + ','.join(subscriptions)
 
         log.debug('Generating authentication headers.')
         # To auth to the WS using an API key, we generate a signature of a nonce and

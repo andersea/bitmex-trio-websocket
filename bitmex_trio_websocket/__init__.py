@@ -16,7 +16,7 @@ from .storage import Storage
 
 __author__ = """Anders Ellenshøj Andersen"""
 __email__ = 'andersa@atlab.dk'
-__version__ = '0.2.8'
+__version__ = '0.4.0'
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +29,11 @@ class BitMEXWebsocket:
     
     @staticmethod
     @asynccontextmanager
-    async def connect(endpoint: str, api_key: str=None, api_secret: str=None):
+    async def connect(network: str, api_key: str=None, api_secret: str=None):
+
+        if not network in ('mainnet', 'testnet'):
+            raise ValueError('network argument must be either \'mainnet\' or \'testnet\'')
+
 
         async def process_stream():
             log.debug('Run task starting.')
@@ -52,7 +56,7 @@ class BitMEXWebsocket:
         bitmex_websocket = BitMEXWebsocket()
 
         async with trio.open_nursery() as nursery:
-            stream = bitmex_websocket.storage.process(connect(nursery, endpoint, api_key, api_secret))
+            stream = bitmex_websocket.storage.process(connect(nursery, network, api_key, api_secret))
             bitmex_websocket.trio_websocket = await stream.__anext__()
             nursery.start_soon(process_stream)
             yield bitmex_websocket

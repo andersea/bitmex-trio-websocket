@@ -46,11 +46,11 @@ Note, that delete actions are simply applied and consumed, with no output sent.
 
 ![bitmex__trio__websocket.BitMEXWebsocket](https://img.shields.io/badge/class-bitmex__trio__websocket.BitMEXWebsocket-blue?style=flat-square)
 
-![constructor](https://img.shields.io/badge/constructor-BitMEXWebsocket(endpoint%2C%20api__key%2C%20api__secret)-blue)
+![constructor](https://img.shields.io/badge/constructor-BitMEXWebsocket(network%2C%20api__key%2C%20api__secret)-blue)
 
 Creates a new websocket object.
 
-**`endpoint`** str
+**`network`** str
 
 Network to connect to. Options: 'mainnet', 'testnet'.
 
