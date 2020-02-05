@@ -7,7 +7,7 @@ __email__ = 'andersa@atlab.dk'
 __version__ = '0.4.2'
 
 from collections import defaultdict
-from contextlib import asynccontextmanager
+from async_generator import asynccontextmanager
 from typing import Optional
 import logging
 
