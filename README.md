@@ -111,6 +111,6 @@ See - https://trio-websocket.readthedocs.io/en/stable/api.html#connections
 
 Thanks to the [Trio](https://github.com/python-trio/trio) and [Trio-websocket](https://github.com/HyperionGray/trio-websocket) libraries for their awesome work.
 
-The library was originally based on the [reference client](https://github.com/BitMEX/api-connectors/tree/master/official-ws), but now hardly resembles it at all.
+The library was originally based on the [reference client](https://github.com/BitMEX/api-connectors/tree/master/official-ws), but is now substantially redesigned.
 
 This package was created with [Cookiecutter](https://github.com/audreyr/cookiecutter) and the [audreyr/cookiecutter-pypackage](https://github.com/audreyr/cookiecutter-pypackage) project template.

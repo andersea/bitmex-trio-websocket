@@ -16,7 +16,7 @@ from .storage import Storage
 
 __author__ = """Anders Ellenshøj Andersen"""
 __email__ = 'andersa@atlab.dk'
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 
 log = logging.getLogger(__name__)
 

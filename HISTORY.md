@@ -1,5 +1,10 @@
 # History
 
+## 0.4.1 (2020-02-05)
+
+* Checks network argument to BitMEXWebsocket init method is valid.
+* storage.insert() method allows storage to be patched externally.
+
 ## 0.4.0 (2020-02-03)
 
 * Big refactoring.
