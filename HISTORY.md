@@ -1,5 +1,9 @@
 # History
 
+## 0.4.2 (2020-02-05)
+
+* Relaxed python dependency to 3.6
+
 ## 0.4.1 (2020-02-05)
 
 * Checks network argument to BitMEXWebsocket init method is valid.

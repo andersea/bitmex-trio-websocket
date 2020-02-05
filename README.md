@@ -19,8 +19,9 @@ Websocket implementation for BitMEX cryptocurrency derivatives exchange.
 
 ## Installation
 
-This library requires Python 3.7 or greater. It could probably be made to run with Python 3.6, since this
-is the minimal version where async generators are supported. To install from PyPI:
+This library requires Python 3.6 or greater. 
+
+To install from PyPI:
 
     pip install bitmex-trio-websocket
 
