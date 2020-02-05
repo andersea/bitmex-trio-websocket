@@ -5,24 +5,24 @@
 import os
 from random import random
 
-from trio import sleep, open_nursery
+import trio
 import ujson
 from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionClosed
-from bitmex_trio_websocket import BitMEXWebsocket
+from bitmex_trio_websocket import BitMEXWebsocket, connect
 
 async def test_auth_fail():
-    await sleep(random())
+    await trio.sleep(random())
     try:
-        async with open_nursery() as nursery:
+        async with trio.open_nursery() as nursery:
             async for msg in connect(nursery, 'testnet', 'abcd1234', 'efgh5678'):
                 assert False
     except ConnectionRejected:
         assert True
 
 async def test_auth_success():
-    await sleep(random())
+    await trio.sleep(random())
     try:
-        async with open_nursery() as nursery:
+        async with trio.open_nursery() as nursery:
             messages = connect(nursery, 'testnet', os.getenv('TESTNET_API_KEY'), os.getenv('TESTNET_API_SECRET'))
             ws = await messages.__anext__()
             assert isinstance(ws, WebSocketConnection)
@@ -36,9 +36,9 @@ async def test_auth_success():
         assert True
 
 async def test_multisymbol():
-    await sleep(random())
+    await trio.sleep(random())
     try:
-        async with open_nursery() as nursery:
+        async with trio.open_nursery() as nursery:
             messages = connect(nursery, 'testnet', os.getenv('TESTNET_API_KEY'), os.getenv('TESTNET_API_SECRET'))
             count = 0
             ws = await messages.__anext__()
