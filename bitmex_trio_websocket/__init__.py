@@ -2,6 +2,10 @@
 
 """Top-level package for BitMEX Trio-Websocket."""
 
+__author__ = """Anders Ellenshøj Andersen"""
+__email__ = 'andersa@atlab.dk'
+__version__ = '0.4.1'
+
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from typing import Optional
@@ -12,11 +16,6 @@ import ujson
 
 from .websocket import connect
 from .storage import Storage
-
-
-__author__ = """Anders Ellenshøj Andersen"""
-__email__ = 'andersa@atlab.dk'
-__version__ = '0.4.1'
 
 log = logging.getLogger(__name__)
 
