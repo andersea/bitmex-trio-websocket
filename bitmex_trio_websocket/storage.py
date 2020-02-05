@@ -2,13 +2,22 @@ from collections import defaultdict
 from datetime import datetime, timezone
 import decimal
 import logging
-from typing import Mapping, Union
+from typing import Mapping, Union, Iterable
+
+# Type alias for a table record
+TableItem = Mapping[str, Union[int, float, str]]
 
 from sortedcontainers import SortedDict
 
 logger = logging.getLogger(__name__)
 
 class Storage:
+    """
+    This is an almost sans io storage engine for the BitMEX websocket api.
+
+    It assumes the the input is an async generator function that yields
+    websocket api messages as dictionaries.
+    """
 
     # Don't grow a table larger than this amount. Helps cap memory usage.
     MAX_TABLE_LEN = 200
@@ -21,6 +30,7 @@ class Storage:
         self.keys = {}
 
     async def process(self, ws):
+        """Updates the storage from websocket messages"""
         # Yields the connection itself for outsiders.
         yield await ws.asend(None)
         # Processes the rest of the messages
@@ -43,24 +53,20 @@ class Storage:
             if action == 'partial':
                 logger.debug('%s: partial', table)
                 # Keys are communicated on partials to let you know how to uniquely identify
-                # an item. We use it for updates.
+                # an item.
                 self.keys[table] = message['keys']
 
+                # Insert data
+                self.insert(table, message['data'])
+                # Generate inserted items
                 if table =='orderBookL2':
-                    # This is used to yield the output. Not sure if only a single symbol
-                    # is included per partial. If so, then finding unique symbols is
-                    # obviously a waste of time.
-                    symbols = set()
-                    for item in message['data']:
-                        symbols.add(item['symbol'])
-                        self.orderbook[item['symbol']][item['side']][item['id']] = item
-                    # Yield order book per symbol in the partial.
-                    for symbol in symbols:
-                        yield (self.orderbook[symbol], symbol, table, action)
+                    # For the orderBook we send the complete book, since sending each item
+                    # in turn doesn't make much sense, for such a big table.
+                    symbol = message['data'][0]['symbol']
+                    yield (self.orderbook[symbol], symbol, table, action)
                 else:
+                    # For all other tables, generate each individual item
                     for item in message['data']:
-                        # Store item by key
-                        self.data[table][self.make_key(table, item)] = item
                         if 'symbol' in item:
                             yield (item, item['symbol'], table, action)
                         else:
@@ -69,36 +75,16 @@ class Storage:
             elif action == 'insert':
                 logger.debug('%s: inserting %s', table, message["data"])
 
-                # Limit the max length of the table to avoid excessive memory usage.
-                if table == 'order':
-                    # Trim closed orders that are older than a minute - Filled orders
-                    # can be reopened by amending leavesQty within a minute. After that
-                    # we can delete them.
-                    outdated_keys = [
-                        k for k, i in self.data[table].items()
-                        if i['leavesQty'] <= 0 and (datetime.now(timezone.utc) - parse_timestamp(i['timestamp'])).total_seconds() > 60
-                    ]
-                    for key in outdated_keys:
-                        del self.data[table][key]
-                elif table == 'orderBookL2':
-                    # Don't trim the order book because we'll lose valuable state if we do.
-                    pass
-                elif len(self.data[table]) > self.MAX_TABLE_LEN:
-                    # Delete the first half of the keys
-                    del self.data[table].keys()[:(self.MAX_TABLE_LEN // 2)]
-
+                # Check if table length exceeded
+                self._limit_table_size(table)
                 # Insert items
-                if table == 'orderBookL2':
-                    for item in message['data']:
-                        self.orderbook[item['symbol']][item['side']][item['id']] = item
+                self.insert(table, message['data'])
+                # Generate inserted items
+                for item in message['data']:
+                    if 'symbol' in item:
                         yield (item, item['symbol'], table, action)
-                else:
-                    for item in message['data']:
-                        self.data[table][self.make_key(table, item)] = item
-                        if 'symbol' in item:
-                            yield (item, item['symbol'], table, action)
-                        else:
-                            yield (item, None, table, action)
+                    else:
+                        yield (item, None, table, action)
 
 
             elif action == 'update':
@@ -123,23 +109,54 @@ class Storage:
 
             elif action == 'delete':
                 logger.debug('%s: deleting %s', table, message["data"])
-                for deleted in message['data']:
+                for item in message['data']:
                     # Locate the item in the collection and remove it.
                     try:
                         if table == 'orderBookL2':
-                            del self.orderbook[deleted['symbol']][deleted['side']][deleted['id']]
+                            del self.orderbook[item['symbol']][item['side']][item['id']]
                         else:
-                            del self.data[table][self.make_key(table, deleteData)]
+                            del self.data[table][self.make_key(table, item)]
                     except KeyError:
                         pass # Item not found
             else:
-                raise Exception("Unknown action: %s" % action)
+                raise Exception(f'Unknown action: {action}')
 
             logger.debug('Next iteration.')
     
-    def make_key(self, table: str, match_data: Mapping[str, Union[int, float, str]]) -> tuple:
+    def _limit_table_size(self, table):
+        """Limit the max length of the table to avoid excessive memory usage."""
+        if table == 'order':
+            # Trim closed orders that are older than a minute - Filled orders
+            # can be reopened by amending leavesQty within a minute. After that
+            # we can delete them.
+            outdated_keys = [
+                k for k, i in self.data[table].items()
+                if i['leavesQty'] <= 0 and (datetime.now(timezone.utc) - parse_timestamp(i['timestamp'])).total_seconds() > 60
+            ]
+            for key in outdated_keys:
+                del self.data[table][key]
+        elif table == 'orderBookL2':
+            # Don't trim the order book because we'll lose valuable state if we do.
+            pass
+        elif len(self.data[table]) > self.MAX_TABLE_LEN:
+            # Delete the first half of the keys
+            del self.data[table].keys()[:(self.MAX_TABLE_LEN // 2)]
+    
+    def insert(self, table: str, data: Iterable[TableItem]):
+        """Inserts a sequence of table items into the given table"""
+        if table == 'orderBookL2':
+            if len(set(item['symbol'] for item in data)) != 1:
+                raise RuntimeError('Order book update contained multiple symbols')
+            for item in data:
+                self.orderbook[item['symbol']][item['side']][item['id']] = item
+        else:
+            self.data[table].update((self.make_key(table, item), item) for item in data)
+    
+    def make_key(self, table: str, match_data: TableItem) -> tuple:
+        """Creates a storage key tuple from a table item"""
         return tuple(match_data[key] for key in self.keys[table])
     
     @staticmethod
     def parse_timestamp(timestamp: str) -> datetime:
+        """Parses a BitMEX timestamp into a datetime object"""
         return datetime(timestamp.replace('Z', '+0000'), '%Y-%m-%dT%H:%M:%S.%f%z')
