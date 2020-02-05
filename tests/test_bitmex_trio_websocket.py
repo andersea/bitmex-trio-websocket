@@ -5,6 +5,8 @@
 import os
 from random import random
 
+import pytest
+
 import trio
 import ujson
 from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionClosed
@@ -68,12 +70,10 @@ async def test_orderbook():
             break
 
 async def test_network_argument():
-    async with trio.open_nursery() as nursery:
-        cn = connect(nursery, 'mainnet')
-        assert getattr(cn, '__aiter__', None) is not None
-        cn = connect(nursery, 'testnet')
-        assert getattr(cn, '__aiter__', None) is not None
-        try:
-            connect(nursery, 'incorrect')
-        except Exception as e:
-            assert isinstance(e, ValueError)
+    async with BitMEXWebsocket.connect('mainnet') as s:
+        assert getattr(s, 'listen', None) is not None
+    async with BitMEXWebsocket.connect('testnet') as s:
+        assert getattr(s, 'listen', None) is not None
+    with pytest.raises(ValueError):
+        async with BitMEXWebsocket.connect('incorrect') as s:
+            assert False, 'BitMEXWebsocket.connect accepted erroneous network argument.'
