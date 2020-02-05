@@ -9,6 +9,7 @@ before_deploy:
 - poetry build
 deploy:
   provider: script
+  edge: true
   script: poetry publish
   on:
     tags: true
