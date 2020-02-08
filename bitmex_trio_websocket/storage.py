@@ -53,8 +53,12 @@ class Storage:
             if action == 'partial':
                 logger.debug('%s: partial', table)
                 # Keys are communicated on partials to let you know how to uniquely identify
-                # an item.
-                self.keys[table] = message['keys']
+                # an item. Some tables don't have keys. For those, we can use the attributes
+                # field to generate a key.
+                if message['keys']:
+                    self.keys[table] = message['keys']
+                else:
+                    self.keys[table] = list(message['attributes'].keys())
 
                 # Insert data
                 self.insert(table, message['data'])
