@@ -1,5 +1,9 @@
 # History
 
+## 0.4.4 (2020-02-08)
+
+* Fixed table storage for insert-only keyless tables, like tradeBin. Uses attributes from partial message instead of the keys list.
+
 ## 0.4.2 (2020-02-05)
 
 * Relaxed python dependency to 3.6
