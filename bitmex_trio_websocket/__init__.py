@@ -4,7 +4,7 @@
 
 __author__ = """Anders Ellenshøj Andersen"""
 __email__ = 'andersa@atlab.dk'
-__version__ = '0.4.4'
+__version__ = '0.5.0'
 
 from collections import defaultdict
 from async_generator import asynccontextmanager
