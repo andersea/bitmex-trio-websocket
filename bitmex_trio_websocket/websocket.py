@@ -51,6 +51,8 @@ async def connect(nursery, network, api_key=None, api_secret=None):
                                 message["request"]["args"][0], message["error"])
             elif 'action' in message:
                 yield message
+            elif 'request' in message and 'op' in message['request'] and message['request']['op'] == 'cancelAllAfter':
+                log.debug('Dead mans switch reset. All open orders will be cancelled at %s.', message['cancelTime'])
             else:
                 log.warning('Received unknown message type: %s', message)
 
