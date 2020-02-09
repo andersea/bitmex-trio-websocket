@@ -7,7 +7,7 @@ __email__ = 'andersa@atlab.dk'
 __version__ = '0.5.1'
 
 from collections import defaultdict
-from async_generator import asynccontextmanager
+from async_generator import asynccontextmanager, aclosing
 from typing import Optional
 import logging
 
@@ -39,16 +39,17 @@ class BitMEXWebsocket:
             # log.debug('Websocket connected. Waiting for listeners.')
             await bitmex_websocket._listeners_attached.wait()
             try:
-                async for item, item_symbol, item_table, item_action in stream:
-                    for listen_table, listen_symbol in bitmex_websocket._listeners.keys():
-                        if listen_table == item_table:
-                            if item_symbol:
-                                if not listen_symbol or listen_symbol == item_symbol:
+                async with aclosing(stream) as agen:
+                    async for item, item_symbol, item_table, item_action in agen:
+                        for listen_table, listen_symbol in bitmex_websocket._listeners.keys():
+                            if listen_table == item_table:
+                                if item_symbol:
+                                    if not listen_symbol or listen_symbol == item_symbol:
+                                        for send_channel in bitmex_websocket._listeners[(listen_table, listen_symbol)]:
+                                            await send_channel.send(item)
+                                else:
                                     for send_channel in bitmex_websocket._listeners[(listen_table, listen_symbol)]:
                                         await send_channel.send(item)
-                            else:
-                                for send_channel in bitmex_websocket._listeners[(listen_table, listen_symbol)]:
-                                    await send_channel.send(item)
             finally:
                 log.debug('Stream processing task done.')
         
