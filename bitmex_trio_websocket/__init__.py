@@ -28,9 +28,9 @@ class BitMEXWebsocket:
     
     @staticmethod
     @asynccontextmanager
-    async def connect(network: str, api_key: str=None, api_secret: str=None):
+    async def connect(network: str, api_key: str=None, api_secret: str=None, *, dead_mans_switch=False):
 
-        if not network in ('mainnet', 'testnet'):
+        if network not in ('mainnet', 'testnet'):
             raise ValueError('network argument must be either \'mainnet\' or \'testnet\'')
 
 
@@ -52,12 +52,21 @@ class BitMEXWebsocket:
             finally:
                 log.debug('Stream processing task done.')
         
+        async def cancel_all_after():
+            log.debug('Dead mans switch enabled.')
+            op = ujson.dumps({'op': 'cancelAllAfter', 'args': 60000})
+            while True:
+                await bitmex_websocket.trio_websocket.send_message(op)
+                await trio.sleep(15)
+        
         bitmex_websocket = BitMEXWebsocket()
 
         async with trio.open_nursery() as nursery:
             stream = bitmex_websocket.storage.process(connect(nursery, network, api_key, api_secret))
             bitmex_websocket.trio_websocket = await stream.__anext__()
             nursery.start_soon(process_stream)
+            if dead_mans_switch:
+                nursery.start_soon(cancel_all_after)
             yield bitmex_websocket
             log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
             nursery.cancel_scope.cancel()
