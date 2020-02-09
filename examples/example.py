@@ -5,6 +5,7 @@ import logging
 sys.path.append(os.getcwd() + '/..')
 
 import trio
+from async_generator import aclosing
 
 from bitmex_trio_websocket import BitMEXWebsocket
 
@@ -13,11 +14,12 @@ logging.basicConfig(level='INFO', format='[%(asctime)s] %(levelname)s [%(name)s.
 async def main():
     async with BitMEXWebsocket.connect('testnet') as bws:
         count = 0
-        async for msg in bws.listen('instrument'):
-            print(f'Received message, symbol: \'{msg["symbol"]}\', timestamp: \'{msg["timestamp"]}\'')
-            count += 1
-            if count == 5:
-                break
+        async with aclosing(bws.listen('instrument')) as agen:
+            async for msg in agen:
+                print(f'Received message, symbol: \'{msg["symbol"]}\', timestamp: \'{msg["timestamp"]}\'')
+                count += 1
+                if count == 5:
+                    break
 
 
 if __name__ == '__main__':
