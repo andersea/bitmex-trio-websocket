@@ -8,6 +8,7 @@ from random import random
 import pytest
 
 import trio
+from async_generator import aclosing
 import ujson
 from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionClosed
 from bitmex_trio_websocket import BitMEXWebsocket, connect
@@ -16,8 +17,9 @@ async def test_auth_fail():
     await trio.sleep(random())
     try:
         async with trio.open_nursery() as nursery:
-            async for msg in connect(nursery, 'testnet', 'abcd1234', 'efgh5678'):
-                assert False
+            async with aclosing(connect(nursery, 'testnet', 'abcd1234', 'efgh5678')) as agen:
+                async for msg in agen:
+                    assert False
     except ConnectionRejected:
         assert True
 
@@ -26,13 +28,14 @@ async def test_auth_success():
     try:
         async with trio.open_nursery() as nursery:
             messages = connect(nursery, 'testnet', os.getenv('TESTNET_API_KEY'), os.getenv('TESTNET_API_SECRET'))
-            ws = await messages.__anext__()
-            assert isinstance(ws, WebSocketConnection)
-            await ws.send_message(ujson.dumps({'op': 'subscribe', 'args': ['margin', 'position', 'order', 'execution']}))
-            async for msg in messages:
-                assert isinstance(msg, dict)
-                assert 'action' in msg
-                await ws.aclose()
+            async with aclosing(messages) as agen:
+                ws = await agen.__anext__()
+                assert isinstance(ws, WebSocketConnection)
+                await ws.send_message(ujson.dumps({'op': 'subscribe', 'args': ['margin', 'position', 'order', 'execution']}))
+                async for msg in agen:
+                    assert isinstance(msg, dict)
+                    assert 'action' in msg
+                    await ws.aclose()
 
     except ConnectionClosed:
         assert True
@@ -43,31 +46,34 @@ async def test_multisymbol():
         async with trio.open_nursery() as nursery:
             messages = connect(nursery, 'testnet', os.getenv('TESTNET_API_KEY'), os.getenv('TESTNET_API_SECRET'))
             count = 0
-            ws = await messages.__anext__()
-            await ws.send_message(ujson.dumps({'op': 'subscribe', 'args': ['instrument:XBTUSD', 'instrument:ETHUSD']}))
-            async for msg in messages:
-                assert isinstance(msg, dict)
-                count += 1
-                if count >= 3:
-                    print(count)
-                    await ws.aclose()
+            async with aclosing(messages) as agen:
+                ws = await agen.__anext__()
+                await ws.send_message(ujson.dumps({'op': 'subscribe', 'args': ['instrument:XBTUSD', 'instrument:ETHUSD']}))
+                async for msg in agen:
+                    assert isinstance(msg, dict)
+                    count += 1
+                    if count >= 3:
+                        print(count)
+                        await ws.aclose()
     except ConnectionClosed:
         assert True
 
 async def test_context_manager():
     async with BitMEXWebsocket.connect('testnet', os.getenv('TESTNET_API_KEY'), os.getenv('TESTNET_API_SECRET')) as bitmex_ws:
         count = 0
-        async for msg in bitmex_ws.listen('instrument', 'XBTUSD'):
-            count += 1
-            if count >= 3:
-                break
-        assert True
+        async with aclosing(bitmex_ws.listen('instrument', 'XBTUSD')) as agen:
+            async for msg in agen:
+                count += 1
+                if count >= 3:
+                    break
+            assert True
 
 async def test_orderbook():
     async with BitMEXWebsocket.connect('testnet') as bws:
-        async for msg in bws.listen('orderBookL2', 'XBTUSD'):
-            assert len(msg) == 2
-            break
+        async with aclosing(bws.listen('orderBookL2', 'XBTUSD')) as agen:
+            async for msg in agen:
+                assert len(msg) == 2
+                break
 
 async def test_network_argument():
     async with BitMEXWebsocket.connect('mainnet') as s:

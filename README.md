@@ -28,13 +28,15 @@ To install from PyPI:
 ## Client example
 
     import trio
+    from async_generator import aclosing
 
     from bitmex_trio_websocket import BitMEXWebsocket
 
     async def main():
         async with BitMEXWebsocket.connect('testnet') as bws:
-            async for msg in bws.listen('instrument'):
-                print(f'Received message, symbol: \'{msg["symbol"]}\', timestamp: \'{msg["timestamp"]}\'')
+            async with aclosing(bws.listen('instrument')) as agen:
+                async for msg in agen:
+                    print(f'Received message, symbol: \'{msg["symbol"]}\', timestamp: \'{msg["timestamp"]}\'')
 
     if __name__ == '__main__':
         trio.run(main)
