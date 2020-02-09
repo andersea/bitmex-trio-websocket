@@ -1,5 +1,9 @@
 # History
 
+## 0.5.0 (2020-02-09)
+
+* Added optional dead mans switch. See: https://www.bitmex.com/app/wsAPI#Dead-Mans-Switch-Auto-Cancel
+
 ## 0.4.4 (2020-02-08)
 
 * Fixed table storage for insert-only keyless tables, like tradeBin. Uses attributes from partial message instead of the keys list.

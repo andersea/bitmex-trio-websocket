@@ -47,7 +47,7 @@ Note, that delete actions are simply applied and consumed, with no output sent.
 
 ![bitmex__trio__websocket.BitMEXWebsocket](https://img.shields.io/badge/class-bitmex__trio__websocket.BitMEXWebsocket-blue?style=flat-square)
 
-![constructor](https://img.shields.io/badge/constructor-BitMEXWebsocket(network%2C%20api__key%2C%20api__secret)-blue)
+![constructor](https://img.shields.io/badge/constructor-BitMEXWebsocket(network%2C%20api__key%2C%20api__secret%2C%20*%2C%20dead_mans_switch)-blue)
 
 Creates a new websocket object.
 
@@ -62,6 +62,13 @@ Api key for authenticated connections.
 **`api_secret`** Optional\[str\]
 
 Api secret for authenticated connections.
+
+**`dead_mans_switch`** Optional\[bool\]
+
+If you enable this, the websocket will periodically send cancelAllAfter messages with a timeout of 60 seconds. The timer is refreshed every 15 seconds.
+
+See: https://www.bitmex.com/app/wsAPI#Dead-Mans-Switch-Auto-Cancel
+
 
 ![await listen](https://img.shields.io/badge/await-listen(table,%20symbol=None)-green)
 
