@@ -1,5 +1,10 @@
 # History
 
+## 0.5.2 (2020-02-09)
+
+* Fix: Uses aclosing from async_generator library for context management of all async generators to ensure safe garbage collection. Always ensure you context manage async generators. They *will* shoot you in the foot otherwise!
+* Fix: Handle response message from dead mans switch.
+
 ## 0.5.0 (2020-02-09)
 
 * Added optional dead mans switch. See: https://www.bitmex.com/app/wsAPI#Dead-Mans-Switch-Auto-Cancel
