@@ -65,7 +65,7 @@ Api secret for authenticated connections.
 
 **`dead_mans_switch`** Optional\[bool\]
 
-If you enable this, the websocket will periodically send cancelAllAfter messages with a timeout of 60 seconds. The timer is refreshed every 15 seconds.
+When enabled, the websocket will periodically send cancelAllAfter messages with a timeout of 60 seconds. The timer is refreshed every 15 seconds.
 
 See: https://www.bitmex.com/app/wsAPI#Dead-Mans-Switch-Auto-Cancel
 
