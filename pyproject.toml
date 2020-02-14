@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bitmex-trio-websocket"
-version = "0.5.2"
+version = "0.6.0"
 description = "Websocket implementation for BitMEX cryptocurrency derivatives exchange."
 authors = ["Anders Ellenshøj Andersen <andersa@ellenshoej.dk>"]
 license = "MIT"
