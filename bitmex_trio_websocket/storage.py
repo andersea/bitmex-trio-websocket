@@ -7,17 +7,13 @@ from typing import Mapping, Union, Iterable
 # Type alias for a table record
 TableItem = Mapping[str, Union[int, float, str]]
 
-from async_generator import aclosing
 from sortedcontainers import SortedDict
 
 logger = logging.getLogger(__name__)
 
 class Storage:
     """
-    This is an almost sans io storage engine for the BitMEX websocket api.
-
-    It assumes the the input is an async generator function that yields
-    websocket api messages as dictionaries.
+    This is a sans io storage engine for the BitMEX websocket api.
     """
 
     # Don't grow a table larger than this amount. Helps cap memory usage.
@@ -27,107 +23,98 @@ class Storage:
         self.data = defaultdict(SortedDict)
         # Special storage for orderBookL2
         # dict[symbol][side][id]
-        self.orderbook = defaultdict(lambda: defaultdict(SortedDict))
+        self.data['orderBookL2'] = defaultdict(lambda: defaultdict(SortedDict))
         self.keys = {}
 
-    async def process(self, ws):
-        """Updates the storage from websocket messages"""
-        # Yields the connection itself for outsiders.
-        yield await ws.asend(None)
-        # Processes the rest of the messages
-        logger.debug('First iteration.')
-        async with aclosing(ws) as agen:
-            async for message in agen:
+    def process(self, message):
+        """Updates the storage from parsed websocket messages"""
+        table = message['table'] if 'table' in message else None
+        action = message['action'] if 'action' in message else None
 
-                table = message['table'] if 'table' in message else None
-                action = message['action'] if 'action' in message else None
+        logger.debug('Received %s message for table %s.', action, table)
 
-                logger.debug('Received %s message for table %s.', action, table)
+        if table not in self.keys:
+            self.keys[table] = []
 
-                if table not in self.keys:
-                    self.keys[table] = []
+        # There are four possible actions from the WS:
+        # 'partial' - full table image
+        # 'insert'  - new row
+        # 'update'  - update row
+        # 'delete'  - delete row
+        if action == 'partial':
+            logger.debug('%s: partial', table)
+            # Keys are communicated on partials to let you know how to uniquely identify
+            # an item. Some tables don't have keys. For those, we can use the attributes
+            # field to generate a key.
+            if message['keys']:
+                self.keys[table] = message['keys']
+            else:
+                self.keys[table] = list(message['attributes'].keys())
 
-                # There are four possible actions from the WS:
-                # 'partial' - full table image
-                # 'insert'  - new row
-                # 'update'  - update row
-                # 'delete'  - delete row
-                if action == 'partial':
-                    logger.debug('%s: partial', table)
-                    # Keys are communicated on partials to let you know how to uniquely identify
-                    # an item. Some tables don't have keys. For those, we can use the attributes
-                    # field to generate a key.
-                    if message['keys']:
-                        self.keys[table] = message['keys']
+            # Insert data
+            self.insert(table, message['data'])
+            # Generate inserted items
+            if table =='orderBookL2':
+                # For the orderBook we send the complete book, since sending each item
+                # in turn doesn't make much sense, for such a big table.
+                symbol = message['data'][0]['symbol']
+                return (self.data[table][symbol], symbol, table, action)
+            else:
+                # For all other tables, generate each individual item
+                for item in message['data']:
+                    if 'symbol' in item:
+                        return (item, item['symbol'], table, action)
                     else:
-                        self.keys[table] = list(message['attributes'].keys())
+                        return (item, None, table, action)
 
-                    # Insert data
-                    self.insert(table, message['data'])
-                    # Generate inserted items
-                    if table =='orderBookL2':
-                        # For the orderBook we send the complete book, since sending each item
-                        # in turn doesn't make much sense, for such a big table.
-                        symbol = message['data'][0]['symbol']
-                        yield (self.orderbook[symbol], symbol, table, action)
-                    else:
-                        # For all other tables, generate each individual item
-                        for item in message['data']:
-                            if 'symbol' in item:
-                                yield (item, item['symbol'], table, action)
-                            else:
-                                yield (item, None, table, action)
+        elif action == 'insert':
+            logger.debug('%s: inserting %s', table, message["data"])
 
-                elif action == 'insert':
-                    logger.debug('%s: inserting %s', table, message["data"])
-
-                    # Check if table length exceeded
-                    self._limit_table_size(table)
-                    # Insert items
-                    self.insert(table, message['data'])
-                    # Generate inserted items
-                    for item in message['data']:
-                        if 'symbol' in item:
-                            yield (item, item['symbol'], table, action)
-                        else:
-                            yield (item, None, table, action)
-
-
-                elif action == 'update':
-                    logger.debug('%s: updating %s', table, message["data"])
-                    for update in message['data']:
-                        try:
-                            if table == 'orderBookL2':
-                                item = self.orderbook[update['symbol']][update['side']][update['id']]
-                            else:
-                                item = self.data[table][self.make_key(table, update)]
-
-                            # Update this item.
-                            item.update(update)
-
-                            # Send back the updated item
-                            if 'symbol' in item:
-                                yield (item, item['symbol'], table, action)
-                            else:
-                                yield (item, None, table, action)
-                        except KeyError:
-                            continue # No item found to update. Could happen before push
-
-                elif action == 'delete':
-                    logger.debug('%s: deleting %s', table, message["data"])
-                    for item in message['data']:
-                        # Locate the item in the collection and remove it.
-                        try:
-                            if table == 'orderBookL2':
-                                del self.orderbook[item['symbol']][item['side']][item['id']]
-                            else:
-                                del self.data[table][self.make_key(table, item)]
-                        except KeyError:
-                            pass # Item not found
+            # Check if table length exceeded
+            self._limit_table_size(table)
+            # Insert items
+            self.insert(table, message['data'])
+            # Generate inserted items
+            for item in message['data']:
+                if 'symbol' in item:
+                    return (item, item['symbol'], table, action)
                 else:
-                    raise Exception(f'Unknown action: {action}')
+                    return (item, None, table, action)
 
-                logger.debug('Next iteration.')
+
+        elif action == 'update':
+            logger.debug('%s: updating %s', table, message["data"])
+            for update in message['data']:
+                try:
+                    if table == 'orderBookL2':
+                        item = self.data[table][update['symbol']][update['side']][update['id']]
+                    else:
+                        item = self.data[table][self.make_key(table, update)]
+
+                    # Update this item.
+                    item.update(update)
+
+                    # Send back the updated item
+                    if 'symbol' in item:
+                        return (item, item['symbol'], table, action)
+                    else:
+                        return (item, None, table, action)
+                except KeyError:
+                    continue # No item found to update. Could happen before push
+
+        elif action == 'delete':
+            logger.debug('%s: deleting %s', table, message["data"])
+            for item in message['data']:
+                # Locate the item in the collection and remove it.
+                try:
+                    if table == 'orderBookL2':
+                        del self.data[table][item['symbol']][item['side']][item['id']]
+                    else:
+                        del self.data[table][self.make_key(table, item)]
+                except KeyError:
+                    pass # Item not found
+        else:
+            raise Exception(f'Unknown action: {action}')
     
     def _limit_table_size(self, table):
         """Limit the max length of the table to avoid excessive memory usage."""
@@ -154,12 +141,14 @@ class Storage:
             if len(set(item['symbol'] for item in data)) != 1:
                 raise RuntimeError('Order book update contained multiple symbols')
             for item in data:
-                self.orderbook[item['symbol']][item['side']][item['id']] = item
+                self.data[table][item['symbol']][item['side']][item['id']] = item
         else:
             self.data[table].update((self.make_key(table, item), item) for item in data)
     
     def make_key(self, table: str, match_data: TableItem) -> tuple:
         """Creates a storage key tuple from a table item"""
+        if table == 'orderBookL2':
+            raise ValueError('orderBookL2 must be indexed by [symbol][side][id]')
         return tuple(match_data[key] for key in self.keys[table])
     
     @staticmethod

@@ -1,5 +1,9 @@
 # History
 
+## 0.6.0 (2020-02-14)
+
+* Warning! Thorough refactoring resulting in major api changes. `BitMEXWebsocket` is now created using the `open_bitmex_websocket` function, which is a standalone async context manager. It returns a BitMEXWebsocket.
+
 ## 0.5.2 (2020-02-09)
 
 * Fix: Uses aclosing from async_generator library for context management of all async generators to ensure safe garbage collection. Always ensure you context manage async generators. They *will* shoot you in the foot otherwise!

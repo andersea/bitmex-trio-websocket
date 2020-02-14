@@ -30,10 +30,10 @@ To install from PyPI:
     import trio
     from async_generator import aclosing
 
-    from bitmex_trio_websocket import BitMEXWebsocket
+    from bitmex_trio_websocket import open_bitmex_websocket
 
     async def main():
-        async with BitMEXWebsocket.connect('testnet') as bws:
+        async with open_bitmex_websocket('testnet') as bws:
             async with aclosing(bws.listen('instrument')) as agen:
                 async for msg in agen:
                     print(f'Received message, symbol: \'{msg["symbol"]}\', timestamp: \'{msg["timestamp"]}\'')
@@ -47,11 +47,11 @@ Note, that delete actions are simply applied and consumed, with no output sent.
 
 ## API
 
-![bitmex__trio__websocket.BitMEXWebsocket](https://img.shields.io/badge/class-bitmex__trio__websocket.BitMEXWebsocket-blue?style=flat-square)
-
-![constructor](https://img.shields.io/badge/constructor-BitMEXWebsocket(network%2C%20api__key%2C%20api__secret%2C%20*%2C%20dead_mans_switch)-blue)
+![async def](https://img.shields.io/badge/async%20with-open__bitmex__websocket(network%2C%20api__key%2C%20api__secret%2C%20*%2C%20dead_mans_switch)-blue)
 
 Creates a new websocket object.
+
+This is an async context manager, so it needs to be used with the `async with .. as ..:` construct. The returned value is a BitMEXWebsocket object.
 
 **`network`** str
 
@@ -70,6 +70,8 @@ Api secret for authenticated connections.
 When enabled, the websocket will periodically send cancelAllAfter messages with a timeout of 60 seconds. The timer is refreshed every 15 seconds.
 
 See: https://www.bitmex.com/app/wsAPI#Dead-Mans-Switch-Auto-Cancel
+
+![bitmex__trio__websocket.BitMEXWebsocket](https://img.shields.io/badge/class-bitmex__trio__websocket.BitMEXWebsocket-blue?style=flat-square)
 
 
 ![await listen](https://img.shields.io/badge/await-listen(table,%20symbol=None)-green)
@@ -93,29 +95,23 @@ This attribute contains the storage object for the websocket. The storage object
 items. The implementation uses SortedDict from [Sorted Containers](http://www.grantjenks.com/docs/sortedcontainers/index.html),
 to handle inserts, updates and deletes.
 
-The storage object has three public attributes `data`, `orderbook` and `keys`.
+The storage object has two public attributes `data`, and `keys`.
 
 `data` contains the table state for each channel as a dictionary with the table name as key. The tables are sorted dictionaries, stored with key tuples generated from each item using the keys schema received in the initial partial message.
 
-`orderbook` is a special state dictionary for the orderBookL2 table. It is a double nested defaultdict, with a SortedDict containing each price level. The nested dictionaries are composed like this:
+`data['orderBookL2']` is a special state dictionary for the orderBookL2 table. It is a double nested defaultdict, with a SortedDict containing each price level. The nested dictionaries are composed like this:
 
     # Special storage for orderBookL2
     # dict[symbol][side][id]
-    self.orderbook = defaultdict(lambda: defaultdict(SortedDict))
+    self.data['orderBookL2'] = defaultdict(lambda: defaultdict(SortedDict))
 
 `keys` contains a mapping for lists of keys by which to look up values in each table.
 
 In addition the following helper methods are supplied:
 
-`make_key(table, match_data)` creates a key for searching the `data` table.
+`make_key(table, match_data)` creates a key for searching the `data` table. Raises `ValueError` if `table == 'orderBookL2'`, since this table needs special indexing.
 
 `parse_timestamp(timestamp)` static method for converting BitMEX timestamps to datetime with timezone (UTC).
-
-![ws](https://img.shields.io/badge/attribute-ws-teal)
-
-When connected, contains the underlying trio-websocket object. Can be used to manage the connection.
-
-See - https://trio-websocket.readthedocs.io/en/stable/api.html#connections
 
 ## Credits
 
