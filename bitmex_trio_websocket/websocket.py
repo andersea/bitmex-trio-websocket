@@ -84,9 +84,8 @@ class BitMEXWebsocket:
         log.debug('Run task starting.')
         await self._listeners_attached.wait()
         try:
-            async with aclosing(self._websocket_parser()) as agen:
-                async for message in agen:
-                    item, item_symbol, item_table, item_action = self.storage.process(message)
+            async with aclosing(self.storage.process(self._websocket_parser())) as agen:
+                async for item, item_symbol, item_table, item_action in agen:
                     for listen_table, listen_symbol in self._listeners.keys():
                         if listen_table == item_table:
                             if item_symbol:
