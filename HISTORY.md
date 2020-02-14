@@ -1,8 +1,9 @@
 # History
 
-## 0.6.0 (2020-02-14)
+## 0.6.1 (2020-02-14)
 
 * Warning! Thorough refactoring resulting in major api changes. `BitMEXWebsocket` is now created using the `open_bitmex_websocket` function, which is a standalone async context manager. It returns a BitMEXWebsocket.
+* Deletions are now broadcasted to listeners.
 
 ## 0.5.2 (2020-02-09)
 

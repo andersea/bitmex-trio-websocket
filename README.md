@@ -43,8 +43,6 @@ To install from PyPI:
 
 This will print a sequence of dicts for each received item on inserts (including partials) or updates.
 
-Note, that delete actions are simply applied and consumed, with no output sent.
-
 ## API
 
 ![async def](https://img.shields.io/badge/async%20with-open__bitmex__websocket(network%2C%20api__key%2C%20api__secret%2C%20*%2C%20dead_mans_switch)-blue)

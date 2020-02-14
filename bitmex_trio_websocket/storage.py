@@ -113,6 +113,13 @@ class Storage:
                         del self.data[table][self.make_key(table, item)]
                 except KeyError:
                     pass # Item not found
+            # Send back the deletion fragment
+            for item in message['data']:
+                if 'symbol' in item:
+                    return (item, item['symbol'], table, action)
+                else:
+                    return (item, None, table, action)
+
         else:
             raise Exception(f'Unknown action: {action}')
     
