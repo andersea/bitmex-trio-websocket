@@ -1,8 +1,9 @@
 # History
 
-## 0.6.3 (2020-02-16)
+## 0.6.4 (2020-02-16)
 
 * Fix: Multiple subscriptions to the same channel was not handled properly, resulting in log warnings.
+* Fix: parse_timestamp utility function was used incorrectly.
 
 ## 0.6.1 (2020-02-14)
 
