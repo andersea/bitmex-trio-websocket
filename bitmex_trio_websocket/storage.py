@@ -10,6 +10,8 @@ TableItem = Mapping[str, Union[int, float, str]]
 from async_generator import aclosing
 from sortedcontainers import SortedDict
 
+from .util import parse_timestamp
+
 logger = logging.getLogger(__name__)
 
 class Storage:
@@ -160,8 +162,3 @@ class Storage:
         if table == 'orderBookL2':
             raise ValueError('orderBookL2 must be indexed by [symbol][side][id]')
         return tuple(match_data[key] for key in self.keys[table])
-    
-    @staticmethod
-    def parse_timestamp(timestamp: str) -> datetime:
-        """Parses a BitMEX timestamp into a datetime object"""
-        return datetime(timestamp.replace('Z', '+0000'), '%Y-%m-%dT%H:%M:%S.%f%z')
