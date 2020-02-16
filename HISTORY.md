@@ -1,5 +1,9 @@
 # History
 
+## 0.6.3 (2020-02-16)
+
+* Fix: Multiple subscriptions to the same channel was not handled properly, resulting in log warnings.
+
 ## 0.6.1 (2020-02-14)
 
 * Warning! Thorough refactoring resulting in major api changes. `BitMEXWebsocket` is now created using the `open_bitmex_websocket` function, which is a standalone async context manager. It returns a BitMEXWebsocket.
