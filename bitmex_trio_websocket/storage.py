@@ -1,5 +1,4 @@
 from collections import defaultdict
-from datetime import datetime, timezone
 import decimal
 import logging
 from typing import Mapping, Union, Iterable
@@ -9,8 +8,7 @@ TableItem = Mapping[str, Union[int, float, str]]
 
 from async_generator import aclosing
 from sortedcontainers import SortedDict
-
-from .util import parse_timestamp
+import pendulum
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +134,7 @@ class Storage:
             # we can delete them.
             outdated_keys = [
                 k for k, i in self.data[table].items()
-                if i['leavesQty'] <= 0 and (datetime.now(timezone.utc) - parse_timestamp(i['timestamp'])).total_seconds() > 60
+                if i['leavesQty'] <= 0 and pendulum.now().diff(pendulum.parse(i['timestamp'])).in_seconds() > 60
             ]
             for key in outdated_keys:
                 del self.data[table][key]
