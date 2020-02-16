@@ -11,15 +11,18 @@ from bitmex_trio_websocket import open_bitmex_websocket
 
 logging.basicConfig(level='INFO', format='[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s')
 
+
+async def instrument(websocket, symbol):
+    async with aclosing(websocket.listen('instrument', symbol)) as agen:
+        async for i in agen:
+            print(i)
+
 async def main():
-    async with open_bitmex_websocket('testnet') as bws:
-        count = 0
-        async with aclosing(bws.listen('orderBookL2', 'XBTUSD')) as agen:
-            async for msg in agen:
-                print(f'Received message, symbol: \'{msg["symbol"]}\'')
-                count += 1
-                if count == 100:
-                    break
+    with trio.move_on_after(10):
+        async with open_bitmex_websocket('testnet') as bws, trio.open_nursery() as nursery:
+            # Only one subscription is added. Both listeners get messages from the same channel.
+            nursery.start_soon(instrument, bws, 'XRPUSD')
+            nursery.start_soon(instrument, bws, 'XRPUSD')
 
 
 if __name__ == '__main__':
