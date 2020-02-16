@@ -85,7 +85,7 @@ class BitMEXWebsocket:
         await self._listeners_attached.wait()
         try:
             async with aclosing(self.storage.process(self._websocket_parser())) as agen:
-                async for item, item_symbol, item_table, item_action in agen:
+                async for item, item_symbol, item_table, _ in agen:
                     for listen_table, listen_symbol in self._listeners.keys():
                         if listen_table == item_table:
                             if item_symbol:
@@ -139,6 +139,6 @@ async def open_bitmex_websocket(network: str, api_key: str=None, api_secret: str
         raise ValueError('network argument must be either \'mainnet\' or \'testnet\'')
     
     bitmex_websocket = BitMEXWebsocket()
-
-    async with bitmex_websocket._connect(network, api_key, api_secret, dead_mans_switch):
+    #pylint: disable=not-async-context-manager
+    async with bitmex_websocket._connect(network, api_key, api_secret, dead_mans_switch): 
         yield bitmex_websocket
