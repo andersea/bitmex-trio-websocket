@@ -21,6 +21,7 @@ class BitMEXWebsocket:
         self._ws = None
         self._listeners = defaultdict(list)
         self._listeners_attached = trio.Event()
+        self._subscriptions = set()
     
     async def listen(self, table: str, symbol: Optional[str]=None):
         """
@@ -30,12 +31,11 @@ class BitMEXWebsocket:
         """
         send_channel, receive_channel = trio.open_memory_channel(0)
         listener = (table, symbol)
-        if not listener in self._listeners:
-            topic = table
-            if symbol:
-                topic += f':{symbol}'
-            await self._ws.send_message(ujson.dumps({'op': 'subscribe', 'args': [topic]}))
         self._listeners[listener].append(send_channel)
+        if listener not in self._subscriptions:
+            self._subscriptions.add(listener)
+            topic = table if not symbol else f'{table}:{symbol}'
+            await self._ws.send_message(ujson.dumps({'op': 'subscribe', 'args': [topic]}))
         self._listeners_attached.set()
         try:
             while True:
