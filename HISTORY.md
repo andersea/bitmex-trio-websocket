@@ -1,5 +1,9 @@
 # History
 
+## 0.7.0 (2020-03-01)
+
+* Add support for custom user defined table keys.
+
 ## 0.6.5 (2020-02-16)
 
 * Fix: Multiple subscriptions to the same channel was not handled properly, resulting in log warnings.

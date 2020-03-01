@@ -19,13 +19,20 @@ class Storage:
 
     # Don't grow a table larger than this amount. Helps cap memory usage.
     MAX_TABLE_LEN = 200
+    # This allows global override of table keys. 
+    # Depending on the use case, some table have keys that may be inconvinient.
+    # For instance the quote table has keys ['timestamp','symbol'] which means
+    # that it keeps a historical record of quotes, up to the max table length.
+    # If you are only interested in the latest quote, you may override the key
+    # to be simply ['symbol'].
+    TABLE_KEYS = {}
 
     def __init__(self):
         self.data = defaultdict(SortedDict)
         # Special storage for orderBookL2
         # dict[symbol][side][id]
         self.data['orderBookL2'] = defaultdict(lambda: defaultdict(SortedDict))
-        self.keys = {}
+        self.keys = defaultdict(list)
 
     async def process(self, messages):
         """Updates the storage from parsed websocket messages"""
@@ -35,9 +42,6 @@ class Storage:
                 action = message['action'] if 'action' in message else None
 
                 logger.debug('Received %s message for table %s.', action, table)
-
-                if table not in self.keys:
-                    self.keys[table] = []
 
                 # There are four possible actions from the WS:
                 # 'partial' - full table image
@@ -49,7 +53,9 @@ class Storage:
                     # Keys are communicated on partials to let you know how to uniquely identify
                     # an item. Some tables don't have keys. For those, we can use the attributes
                     # field to generate a key.
-                    if message['keys']:
+                    if table in Storage.TABLE_KEYS:
+                        self.keys[table] = Storage.TABLE_KEYS[table]
+                    elif message['keys']:
                         self.keys[table] = message['keys']
                     else:
                         self.keys[table] = list(message['attributes'].keys())
