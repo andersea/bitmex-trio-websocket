@@ -86,15 +86,16 @@ class BitMEXWebsocket:
         try:
             async with aclosing(self.storage.process(self._websocket_parser())) as agen:
                 async for item, item_symbol, item_table, _ in agen:
-                    for listen_table, listen_symbol in self._listeners.keys():
-                        if listen_table == item_table:
-                            if item_symbol:
-                                if not listen_symbol or listen_symbol == item_symbol:
-                                    for send_channel in self._listeners[(listen_table, listen_symbol)]:
-                                        await send_channel.send(item)
-                            else:
+                    # Lock list of listeners while sending
+                    listeners_for_table = [key for key in self._listeners.keys() if item_table == key[0]]
+                    for listen_table, listen_symbol in listeners_for_table:
+                        if item_symbol:
+                            if not listen_symbol or listen_symbol == item_symbol:
                                 for send_channel in self._listeners[(listen_table, listen_symbol)]:
                                     await send_channel.send(item)
+                        else:
+                            for send_channel in self._listeners[(listen_table, listen_symbol)]:
+                                await send_channel.send(item)
         finally:
             log.debug('Run task done.')
 
