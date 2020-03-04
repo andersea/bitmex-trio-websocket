@@ -1,5 +1,9 @@
 # History
 
+## 0.7.1 (2020-03-04)
+
+* Fix: RuntimeError: dictionary changed size during iteration, when listeners added while simultaneously sending a message.
+
 ## 0.7.0 (2020-03-01)
 
 * Add support for custom user defined table keys.
