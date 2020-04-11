@@ -22,6 +22,7 @@ class BitMEXWebsocket:
         self._listeners = defaultdict(list)
         self._listeners_attached = trio.Event()
         self._subscriptions = set()
+        self._connectionclosed = None
     
     async def listen(self, table: str, symbol: Optional[str]=None):
         """
@@ -29,6 +30,8 @@ class BitMEXWebsocket:
         
         Returns an async generator that yields messages from the subscribed channel.
         """
+        if self._connectionclosed is not None:
+            raise trio.ClosedResourceError('Connection is closed.')
         send_channel, receive_channel = trio.open_memory_channel(0)
         listener = (table, symbol)
         self._listeners[listener].append(send_channel)
@@ -40,6 +43,8 @@ class BitMEXWebsocket:
         try:
             while True:
                 yield await receive_channel.receive()
+        except trio.EndOfChannel:
+            pass
         finally:
             log.debug('Listener detached from table: %s, symbol: %s', table, symbol)
             self._listeners[listener].remove(send_channel)
@@ -75,6 +80,8 @@ class BitMEXWebsocket:
                 log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
                 nursery.cancel_scope.cancel()
             log.debug('BitMEXWebsocket closed.')
+            if self._connectionclosed is not None:
+                raise self._connectionclosed
 
         except OSError as ose:
             log.error('Connection attempt failed: %s', type(ose).__name__)
@@ -132,6 +139,10 @@ class BitMEXWebsocket:
 
         except ConnectionClosed as cle:
             log.info('Connection closed. Closed reason: %s', cle.reason)
+            for listeners in self._listeners.values():
+                for send_channel in listeners:
+                    await send_channel.aclose()
+            self._connectionclosed = cle
 
 @asynccontextmanager
 async def open_bitmex_websocket(network: str, api_key: str=None, api_secret: str=None, *, dead_mans_switch=False):
