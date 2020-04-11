@@ -1,5 +1,12 @@
 # History
 
+## 0.8.0 (2020-04-11)
+
+* Better propagation of connection closure. Before, if the websocket was closed by the remote server for any reason, bitmex_trio_websocket would simply output a log message and take no further action. This is obviously a problem, because the client application now has no way to tell that the connection is closed, other than contrived means, like polling the underlying trio_websocket object periodically. Now, connection closure results in the following:
+** All listen channels will be closed. No reason is given for the closure.
+** Attemts to open new listen channels will cause trio.ClosedResourceError to be raised.
+** It is assumed that closing of listen channels causes the websocket context to exit in the client application. At context exit, the exception that caused the underlying trio_websocket to close is reraised as a notification to the client application.
+
 ## 0.7.1 (2020-03-04)
 
 * Fix: RuntimeError: dictionary changed size during iteration, when listeners added while simultaneously sending a message.
