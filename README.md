@@ -3,12 +3,10 @@
 
 [![PyPI](https://img.shields.io/pypi/v/bitmex_trio_websocket.svg)](https://pypi.python.org/pypi/bitmex-trio-websocket)
 [![Build Status](https://img.shields.io/travis/com/andersea/bitmex-trio-websocket.svg)](https://travis-ci.com/andersea/bitmex-trio-websocket)
-[![Read the Docs](https://readthedocs.org/projects/bitmex-trio-websocket/badge/?version=latest)](https://bitmex-trio-websocket.readthedocs.io/en/latest/?badge=latest)
 
 Websocket implementation for BitMEX cryptocurrency derivatives exchange.
 
 * Free software: MIT license
-* Documentation: https://bitmex-trio-websocket.readthedocs.io.
 
 ## Features
 
