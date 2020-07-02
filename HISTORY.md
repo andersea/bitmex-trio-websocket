@@ -1,5 +1,9 @@
 # History
 
+## 0.8.1 (2020-07-02)
+
+* Documentation: Remove link to missing docs. See the readme for documentation.
+
 ## 0.8.0 (2020-04-11)
 
 * Better propagation of connection closure. Before, if the websocket was closed by the remote server for any reason, bitmex_trio_websocket would simply output a log message and take no further action. This is obviously a problem, because the client application now has no way to tell that the connection is closed, other than contrived means, like polling the underlying trio_websocket object periodically. Now, connection closure results in the following:
