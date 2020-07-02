@@ -22,7 +22,7 @@ async def close_after(websocket, interval):
     await websocket._ws.aclose(1006)
 
 async def main():
-    async with open_bitmex_websocket('testnet') as bws, trio.open_nursery() as nursery:
+    async with open_bitmex_websocket('testnet', os.getenv('TESTNET_API_KEY'), os.getenv('TESTNET_API_SECRET')) as bws, trio.open_nursery() as nursery:
         # Only one subscription is added. Both listeners get messages from the same channel.
         nursery.start_soon(instrument, bws, 'XRPUSD')
         nursery.start_soon(instrument, bws, 'XRPUSD')
