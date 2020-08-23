@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
 
 """BitMEX Websocket Connection."""
-from collections import defaultdict
+from collections import Counter
+import math
 import logging
 from typing import Optional
 
 from async_generator import aclosing, asynccontextmanager
 import trio
-from trio_websocket import connect_websocket_url, ConnectionClosed, WebSocketConnection
-import ujson
+from slurry import Pipeline, Merge, Repeat
+from slurry_websocket import Websocket, ConnectionClosed
 
 from .auth import generate_expires, generate_signature
 from .storage import Storage
+from .parser import Parser
 
 log = logging.getLogger(__name__)
 
 class BitMEXWebsocket:
     def __init__(self):
         self.storage = Storage()
-        self._ws = None
-        self._listeners = defaultdict(list)
-        self._listeners_attached = trio.Event()
-        self._subscriptions = set()
+        self._pipeline = None
+        self._send_channel = None
+        self._subscriptions = Counter()
         self._connectionclosed = None
     
     async def listen(self, table: str, symbol: Optional[str]=None):
@@ -32,22 +33,26 @@ class BitMEXWebsocket:
         """
         if self._connectionclosed is not None:
             raise trio.ClosedResourceError('Connection is closed.')
-        send_channel, receive_channel = trio.open_memory_channel(0)
+
         listener = (table, symbol)
-        self._listeners[listener].append(send_channel)
-        if listener not in self._subscriptions:
-            self._subscriptions.add(listener)
+
+        if self._subscriptions[listener] == 0:
             topic = table if not symbol else f'{table}:{symbol}'
-            await self._ws.send_message(ujson.dumps({'op': 'subscribe', 'args': [topic]}))
-        self._listeners_attached.set()
-        try:
-            while True:
-                yield await receive_channel.receive()
-        except trio.EndOfChannel:
-            pass
-        finally:
-            log.debug('Listener detached from table: %s, symbol: %s', table, symbol)
-            self._listeners[listener].remove(send_channel)
+            await self._send_channel.send({'op': 'subscribe', 'args': [topic]})
+        self._subscriptions[listener] += 1
+
+        async with self._pipeline.tap() as aiter:
+            async for item, item_symbol, item_table, _ in aiter:
+                # Lock list of listeners while sending
+                if item_table == table and (not symbol or item_symbol == symbol):
+                    yield item
+
+        log.debug('Listener detached from table: %s, symbol: %s', table, symbol)
+        self._subscriptions[listener] -= 1
+        if self._subscriptions[listener] == 0:
+            log.debug('No more listeners on table: %s, symbol: %s. Unsubscribing.', table, symbol)
+            topic = table if not symbol else f'{table}:{symbol}'
+            await self._send_channel.send({'op': 'unsubscribe', 'args': [topic]})
 
     @asynccontextmanager
     async def _connect(self, network, api_key, api_secret, dead_mans_switch):
@@ -70,79 +75,28 @@ class BitMEXWebsocket:
                     ('api-key', api_key)
                 ]
 
-            async with trio.open_nursery() as nursery:
+            send_channel, receive_channel = trio.open_memory_channel(math.inf)
+            self._send_channel = send_channel
+
+            if dead_mans_switch:
+                sections = [Merge(receive_channel, Repeat(15, default={'op': 'cancelAllAfter', 'args': 60000}))]
+            else:
+                sections = [receive_channel]
+
+            sections.append(Websocket(url, extra_headers=headers))
+            sections.append(Parser())
+            sections.append(self.storage)
+
+            async with Pipeline.create(*sections) as pipeline:
+                self._pipeline = pipeline
                 log.debug('Opening websocket connection.')
-                self._ws = await connect_websocket_url(nursery, url, extra_headers=headers)
-                if dead_mans_switch:
-                    nursery.start_soon(self._dead_mans_switch)
-                nursery.start_soon(self._run)
                 yield self
                 log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
-                nursery.cancel_scope.cancel()
+                pipeline.nursery.cancel_scope.cancel()
             log.debug('BitMEXWebsocket closed.')
-            if self._connectionclosed is not None:
-                raise self._connectionclosed
 
         except OSError as ose:
             log.error('Connection attempt failed: %s', type(ose).__name__)
-
-    async def _run(self):
-        """Process each message through the storage engine and broadcast the result to listeners."""
-        log.debug('Run task starting.')
-        await self._listeners_attached.wait()
-        try:
-            async with aclosing(self.storage.process(self._websocket_parser())) as agen:
-                async for item, item_symbol, item_table, _ in agen:
-                    # Lock list of listeners while sending
-                    listeners_for_table = [key for key in self._listeners.keys() if item_table == key[0]]
-                    for listen_table, listen_symbol in listeners_for_table:
-                        if item_symbol:
-                            if not listen_symbol or listen_symbol == item_symbol:
-                                for send_channel in self._listeners[(listen_table, listen_symbol)]:
-                                    await send_channel.send(item)
-                        else:
-                            for send_channel in self._listeners[(listen_table, listen_symbol)]:
-                                await send_channel.send(item)
-        finally:
-            log.debug('Run task done.')
-
-    async def _dead_mans_switch(self):
-        log.debug('Dead mans switch task starting.')
-        op = ujson.dumps({'op': 'cancelAllAfter', 'args': 60000})
-        while True:
-            await self._ws.send_message(op)
-            await trio.sleep(15)
-
-    async def _websocket_parser(self):
-        try:
-            while True:
-                log.debug('Getting next raw message from websocket.')
-                raw_message = await self._ws.get_message()
-                log.debug('->')
-                log.debug(raw_message)
-                log.debug('-|')
-                message = ujson.loads(raw_message)
-                if 'info' in message:
-                    log.debug('Connected to BitMEX realtime api.')
-                elif 'subscribe' in message:
-                    if message['success']:
-                        log.debug('Subscribed to %s.', message["subscribe"])
-                    else:
-                        log.error('Unable to subscribe to %s. Error: "%s" Please check and restart.',
-                                    message["request"]["args"][0], message["error"])
-                elif 'action' in message:
-                    yield message
-                elif 'request' in message and 'op' in message['request'] and message['request']['op'] == 'cancelAllAfter':
-                    log.debug('Dead mans switch reset. All open orders will be cancelled at %s.', message['cancelTime'])
-                else:
-                    log.warning('Received unknown message type: %s', message)
-
-        except ConnectionClosed as cle:
-            log.info('Connection closed. Closed reason: %s', cle.reason)
-            for listeners in self._listeners.values():
-                for send_channel in listeners:
-                    await send_channel.aclose()
-            self._connectionclosed = cle
 
 @asynccontextmanager
 async def open_bitmex_websocket(network: str, api_key: str=None, api_secret: str=None, *, dead_mans_switch=False):

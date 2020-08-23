@@ -14,11 +14,10 @@ from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionCl
 from bitmex_trio_websocket import open_bitmex_websocket, BitMEXWebsocket
 
 async def test_auth_fail():
-    bitmex_websocket = BitMEXWebsocket()
     with pytest.raises(ConnectionRejected):
-        async with bitmex_websocket._connect('testnet', 'abcd1234', 'efgh5678', False) as bws:
-            async with aclosing(bws._websocket_parser()) as agen:
-                async for message in agen:
+        async with open_bitmex_websocket('testnet', 'abcd1234', 'efgh5678') as bws:
+            async with aclosing(bws.listen('position')) as aiter:
+                async for item in aiter:
                     assert False
                     
 
