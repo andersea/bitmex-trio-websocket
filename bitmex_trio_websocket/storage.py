@@ -7,12 +7,13 @@ from typing import Mapping, Union, Iterable
 TableItem = Mapping[str, Union[int, float, str]]
 
 from async_generator import aclosing
+from slurry import Section
 from sortedcontainers import SortedDict
 import pendulum
 
 logger = logging.getLogger(__name__)
 
-class Storage:
+class Storage(Section):
     """
     This is a async sans io storage engine for the BitMEX websocket api.
     """
@@ -34,9 +35,9 @@ class Storage:
         self.data['orderBookL2'] = defaultdict(lambda: defaultdict(SortedDict))
         self.keys = defaultdict(list)
 
-    async def process(self, messages):
+    async def pump(self, input, output):
         """Updates the storage from parsed websocket messages"""
-        async with aclosing(messages) as agen:
+        async with aclosing(input) as agen:
             async for message in agen:
                 table = message['table'] if 'table' in message else None
                 action = message['action'] if 'action' in message else None
@@ -67,14 +68,14 @@ class Storage:
                         # For the orderBook we send the complete book, since sending each item
                         # in turn doesn't make much sense, for such a big table.
                         symbol = message['data'][0]['symbol']
-                        yield (self.data[table][symbol], symbol, table, action)
+                        await output.send((self.data[table][symbol], symbol, table, action))
                     else:
                         # For all other tables, generate each individual item
                         for item in message['data']:
                             if 'symbol' in item:
-                                yield (item, item['symbol'], table, action)
+                                await output.send((item, item['symbol'], table, action))
                             else:
-                                yield (item, None, table, action)
+                                await output.send((item, None, table, action))
 
                 elif action == 'insert':
                     logger.debug('%s: inserting %s', table, message["data"])
@@ -86,9 +87,9 @@ class Storage:
                     # Generate inserted items
                     for item in message['data']:
                         if 'symbol' in item:
-                            yield (item, item['symbol'], table, action)
+                            await output.send((item, item['symbol'], table, action))
                         else:
-                            yield (item, None, table, action)
+                            await output.send((item, None, table, action))
 
 
                 elif action == 'update':
@@ -105,9 +106,9 @@ class Storage:
 
                             # Send back the updated item
                             if 'symbol' in item:
-                                yield (item, item['symbol'], table, action)
+                                await output.send((item, item['symbol'], table, action))
                             else:
-                                yield (item, None, table, action)
+                                await output.send((item, None, table, action))
                         except KeyError:
                             continue # No item found to update. Could happen before push
 
@@ -125,9 +126,9 @@ class Storage:
                     # Send back the deletion fragment
                     for item in message['data']:
                         if 'symbol' in item:
-                            yield (item, item['symbol'], table, action)
+                            await output.send((item, item['symbol'], table, action))
                         else:
-                            yield (item, None, table, action)
+                            await output.send((item, None, table, action))
 
                 else:
                     raise Exception(f'Unknown action: {action}')

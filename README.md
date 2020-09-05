@@ -13,7 +13,7 @@ Websocket implementation for BitMEX cryptocurrency derivatives exchange.
 * Supports authenticated connections using api keys.
 * Uses SortedDict as backend storage for easy and fast table searching.
 * Fully async using async generators. No callbacks or event emitters.
-* Based on trio and trio-websocket.
+* Based on [Slurry](https://slurry.readthedocs.io/en/latest/) and [Slurry-websocket](https://github.com/andersea/slurry-websocket). 
 
 ## Installation
 
