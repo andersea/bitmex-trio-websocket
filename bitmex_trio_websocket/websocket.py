@@ -44,7 +44,7 @@ class BitMEXWebsocket:
         async with self._pipeline.tap() as aiter:
             async for item, item_symbol, item_table, _ in aiter:
                 # Lock list of listeners while sending
-                if item_table == table and (not symbol or item_symbol in symbols):
+                if item_table == table and (not symbols or item_symbol in symbols):
                     yield item
 
         log.debug('Listener detached from table: %s, symbol: %s', table, symbols)
