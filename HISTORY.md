@@ -1,5 +1,9 @@
 # History
 
+## 0.10.0 (2020-09-06)
+
+* Support multisymbol subscriptions per listener
+
 ## 0.9.0 (2020-09-05)
 
 * Bitmex trio websocket is now based on the [Slurry](https://slurry.readthedocs.io/en/latest/) streaming data processing microframework.
