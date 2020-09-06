@@ -47,10 +47,10 @@ class BitMEXWebsocket:
                 if item_table == table and (not symbol or item_symbol in symbols):
                     yield item
 
-        log.debug('Listener detached from table: %s, symbol: %s', table, symbol)
+        log.debug('Listener detached from table: %s, symbol: %s', table, symbols)
         self._subscriptions[listener] -= 1
         if self._subscriptions[listener] == 0:
-            log.debug('No more listeners on table: %s, symbol: %s. Unsubscribing.', table, symbol)
+            log.debug('No more listeners on table: %s, symbol: %s. Unsubscribing.', table, symbols)
             topic = table if not symbol else f'{table}:{",".join(symbols)}'
             await self._send_channel.send({'op': 'unsubscribe', 'args': [topic]})
 
