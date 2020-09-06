@@ -4,7 +4,7 @@
 from collections import Counter
 import math
 import logging
-from typing import Optional
+from typing import Optional, Sequence
 
 from async_generator import aclosing, asynccontextmanager
 import trio
@@ -25,7 +25,7 @@ class BitMEXWebsocket:
         self._subscriptions = Counter()
         self._connectionclosed = None
     
-    async def listen(self, table: str, *symbols: Optional[str]=None):
+    async def listen(self, table: str, *symbols: Optional[Sequence[str]]):
         """
         Subscribe to a channel and optionally one or more specific symbols.
         
