@@ -1,6 +1,6 @@
 # History
 
-## 0.10.0 (2020-09-06)
+## 0.10.1 (2020-11-02)
 
 * Support multisymbol subscriptions per listener
 

@@ -34,12 +34,14 @@ class BitMEXWebsocket:
         if self._connectionclosed is not None:
             raise trio.ClosedResourceError('Connection is closed.')
 
-        listener = (table, symbols)
+        listeners = [(table,)] if not symbols else [(table, symbol) for symbol in symbols]
 
-        if self._subscriptions[listener] == 0:
-            topic = table if not symbols else f'{table}:{",".join(symbols)}'
-            await self._send_channel.send({'op': 'subscribe', 'args': [topic]})
-        self._subscriptions[listener] += 1
+        args = []
+        for listener in listeners:
+            if self._subscriptions[listener] == 0:
+                args.append(listener[0] if not symbols else ':'.join(listener))
+            self._subscriptions[listener] += 1
+        await self._send_channel.send({'op': 'subscribe', 'args': args})
 
         async with self._pipeline.tap() as aiter:
             async for item, item_symbol, item_table, _ in aiter:
@@ -48,11 +50,14 @@ class BitMEXWebsocket:
                     yield item
 
         log.debug('Listener detached from table: %s, symbol: %s', table, symbols)
-        self._subscriptions[listener] -= 1
-        if self._subscriptions[listener] == 0:
-            log.debug('No more listeners on table: %s, symbol: %s. Unsubscribing.', table, symbols)
-            topic = table if not symbol else f'{table}:{",".join(symbols)}'
-            await self._send_channel.send({'op': 'unsubscribe', 'args': [topic]})
+        args = []
+        for listener in listeners:
+            self._subscriptions[listener] -= 1
+            if self._subscriptions[listener] == 0:
+                log.debug('No more listeners on table: %s, symbol: %s. Unsubscribing.', table, symbols)
+                args.append(listener[0] if not symbols else ':'.join(listener))
+        if args:
+            await self._send_channel.send({'op': 'unsubscribe', 'args': args})
 
     @asynccontextmanager
     async def _connect(self, network, api_key, api_secret, dead_mans_switch):
