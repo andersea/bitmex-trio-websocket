@@ -10,8 +10,10 @@ import pytest
 import trio
 from async_generator import aclosing
 import ujson
+import pendulum
 from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionClosed
 from bitmex_trio_websocket import open_bitmex_websocket, BitMEXWebsocket
+from slurry import Pipeline, Group
 
 async def test_auth_fail():
     with pytest.raises(ConnectionRejected):
@@ -76,3 +78,16 @@ async def test_network_argument():
     with pytest.raises(ValueError):
         async with open_bitmex_websocket('incorrect') as s:
             assert False, 'BitMEXWebsocket.connect accepted erroneous network argument.'
+
+async def test_funding():
+    async with open_bitmex_websocket('mainnet') as ws:
+        async with Pipeline.create(
+            Group(2, ws.listen('funding'))
+        ) as pipeline, pipeline.tap() as aiter:
+            async for bundle in aiter:
+                for funding in bundle:
+                    funding['timestamp'] = pendulum.parse(funding['timestamp'])
+                    funding['fundingInterval'] = pendulum.parse(funding['fundingInterval'])
+                assert isinstance(bundle, tuple)
+                assert len(bundle) > 1
+            assert False, 'This should not happen.'
