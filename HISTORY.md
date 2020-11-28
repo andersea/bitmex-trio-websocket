@@ -1,8 +1,9 @@
 # History
 
-## 0.10.2 (2020-11-28)
+## 0.10.3 (2020-11-28)
 
 * Update dependencies
+* Fix broken tests
 
 ## 0.10.1 (2020-11-02)
 
