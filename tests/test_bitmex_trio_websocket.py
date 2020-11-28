@@ -90,4 +90,5 @@ async def test_funding():
                     funding['fundingInterval'] = pendulum.parse(funding['fundingInterval'])
                 assert isinstance(bundle, tuple)
                 assert len(bundle) > 1
+                return
             assert False, 'This should not happen.'
