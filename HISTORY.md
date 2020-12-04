@@ -1,5 +1,9 @@
 # History
 
+## 0.10.4 (2020-12-04)
+
+* Update to latest slurry
+
 ## 0.10.3 (2020-11-28)
 
 * Update dependencies
