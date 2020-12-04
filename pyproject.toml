@@ -24,8 +24,8 @@ python = "^3.6"
 sortedcontainers = "^2.1.0"
 async_generator = "^1.10"
 pendulum = "^2.0.5"
-slurry-websocket = "^0.1.6"
-slurry = "^0.5.0"
+slurry-websocket = "^0.1.7"
+slurry = "^0.5.1"
 
 [tool.poetry.dev-dependencies]
 pip = "^19.3"
