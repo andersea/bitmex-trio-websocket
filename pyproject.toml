@@ -26,6 +26,7 @@ async_generator = "^1.10"
 pendulum = "^2.0.5"
 slurry-websocket = "^0.1.7"
 slurry = "^0.5.1"
+triopg = "^0.5.0"
 
 [tool.poetry.dev-dependencies]
 pip = "^19.3"
