@@ -18,8 +18,11 @@ from .parser import Parser
 log = logging.getLogger(__name__)
 
 class BitMEXWebsocket:
-    def __init__(self):
-        self.storage = Storage()
+    def __init__(self, storage=None):
+        if storage:
+            self.storage = storage
+        else:
+            self.storage = Storage()
         self._pipeline = None
         self._send_channel = None
         self._subscriptions = Counter()
@@ -102,14 +105,16 @@ class BitMEXWebsocket:
 
         except OSError as ose:
             log.error('Connection attempt failed: %s', type(ose).__name__)
+        except trio.BrokenResourceError as re:
+            print(re)
 
 @asynccontextmanager
-async def open_bitmex_websocket(network: str, api_key: str=None, api_secret: str=None, *, dead_mans_switch=False):
+async def open_bitmex_websocket(network: str, api_key: str=None, api_secret: str=None, *, dead_mans_switch=False, storage=None):
     """Open a new BitMEX websocket connection context."""
     if network not in ('mainnet', 'testnet'):
         raise ValueError('network argument must be either \'mainnet\' or \'testnet\'')
     
-    bitmex_websocket = BitMEXWebsocket()
+    bitmex_websocket = BitMEXWebsocket(storage)
     #pylint: disable=not-async-context-manager
     async with bitmex_websocket._connect(network, api_key, api_secret, dead_mans_switch): 
         yield bitmex_websocket

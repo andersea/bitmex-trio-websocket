@@ -7,3 +7,4 @@ __email__ = 'andersa@atlab.dk'
 __version__ = '0.10.3'
 
 from .websocket import open_bitmex_websocket, BitMEXWebsocket
+from .postgres import PostgresStorage
