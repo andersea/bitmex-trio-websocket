@@ -9,11 +9,12 @@ TableItem = Mapping[str, Union[int, float, str]]
 from async_generator import aclosing
 from slurry import Section
 from sortedcontainers import SortedDict
+import trio
 import pendulum
 
 logger = logging.getLogger(__name__)
 
-class Storage(Section):
+class MemoryStorage(Section):
     """
     This is a async sans io storage engine for the BitMEX websocket api.
     """
@@ -37,7 +38,7 @@ class Storage(Section):
 
     async def pump(self, input, output):
         """Updates the storage from parsed websocket messages"""
-        async with aclosing(input) as agen:
+        async with aclosing(input) as agen, output:
             async for message in agen:
                 table = message['table'] if 'table' in message else None
                 action = message['action'] if 'action' in message else None

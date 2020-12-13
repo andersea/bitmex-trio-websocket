@@ -9,7 +9,6 @@ import pytest
 
 import trio
 from async_generator import aclosing
-import ujson
 import pendulum
 from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionClosed
 from bitmex_trio_websocket import open_bitmex_websocket, BitMEXWebsocket
