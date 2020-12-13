@@ -7,7 +7,7 @@ from typing import Mapping, Union, Iterable
 TableItem = Mapping[str, Union[int, float, str]]
 
 from async_generator import aclosing
-from slurry import Section
+from slurry.sections.abc import Section
 from sortedcontainers import SortedDict
 import pendulum
 

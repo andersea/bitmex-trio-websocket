@@ -8,7 +8,8 @@ from typing import Optional, Sequence
 
 from async_generator import aclosing, asynccontextmanager
 import trio
-from slurry import Pipeline, Merge, Repeat
+from slurry import Pipeline
+from slurry.sections import Merge, Repeat
 from slurry_websocket import Websocket, ConnectionClosed
 
 from .auth import generate_expires, generate_signature

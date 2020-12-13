@@ -1,7 +1,7 @@
 import logging
 
 from async_generator import aclosing
-from slurry import Section
+from slurry.sections.abc import Section
 
 log = logging.getLogger(__name__)
 

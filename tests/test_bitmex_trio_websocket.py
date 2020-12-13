@@ -7,13 +7,12 @@ from random import random
 
 import pytest
 
-import trio
 from async_generator import aclosing
-import ujson
 import pendulum
 from trio_websocket import ConnectionRejected, WebSocketConnection, ConnectionClosed
 from bitmex_trio_websocket import open_bitmex_websocket, BitMEXWebsocket
-from slurry import Pipeline, Group
+from slurry import Pipeline
+from slurry.sections import Group
 
 async def test_auth_fail():
     with pytest.raises(ConnectionRejected):
