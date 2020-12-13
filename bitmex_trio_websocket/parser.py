@@ -21,5 +21,7 @@ class Parser(Section):
                     await output.send(message)
                 elif 'request' in message and 'op' in message['request'] and message['request']['op'] == 'cancelAllAfter':
                     log.debug('Dead mans switch reset. All open orders will be cancelled at %s.', message['cancelTime'])
+                elif 'error' in message:
+                    log.error('%s - Request: %s', message['error'], message['request'])
                 else:
                     log.warning('Received unknown message type: %s', message)
