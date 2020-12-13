@@ -13,7 +13,8 @@ from slurry.sections import Merge, Repeat
 from slurry_websocket import Websocket, ConnectionClosed
 
 from .auth import generate_expires, generate_signature
-from .storage import Storage
+from .storage import MemoryStorage
+from .logger import Logger
 from .parser import Parser
 
 log = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ class BitMEXWebsocket:
         if storage:
             self.storage = storage
         else:
-            self.storage = Storage()
+            self.storage = MemoryStorage()
         self._pipeline = None
         self._send_channel = None
         self._subscriptions = Counter()
@@ -91,6 +92,9 @@ class BitMEXWebsocket:
                 sections = [Merge(receive_channel, Repeat(15, default={'op': 'cancelAllAfter', 'args': 60000}))]
             else:
                 sections = [receive_channel]
+
+            if log.root.level <= logging.DEBUG:
+                sections.append(Logger())
 
             sections.append(Websocket(url, extra_headers=headers))
             sections.append(Parser())
