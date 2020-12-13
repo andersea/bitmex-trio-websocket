@@ -1,5 +1,9 @@
 # History
 
+## 0.10.5 (2020-12-13)
+
+* Upgrade slurry
+
 ## 0.10.4 (2020-12-04)
 
 * Update to latest slurry
