@@ -48,9 +48,9 @@ class PostgresStorage(Section):
                         await postgres.delete(table, message['data'])
                     for item in message['data']:
                         if 'symbol' in item:
-                            await output.send((item, item['symbol'], table, action))
+                            await output((item, item['symbol'], table, action))
                         else:
-                            await output.send((item, None, table, action))
+                            await output((item, None, table, action))
         finally:
             log.debug('Postgres storage engine exit.')            
 
