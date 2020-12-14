@@ -55,8 +55,8 @@ class MemoryStorage(Section):
                     # Keys are communicated on partials to let you know how to uniquely identify
                     # an item. Some tables don't have keys. For those, we can use the attributes
                     # field to generate a key.
-                    if table in Storage.TABLE_KEYS:
-                        self.keys[table] = Storage.TABLE_KEYS[table]
+                    if table in MemoryStorage.TABLE_KEYS:
+                        self.keys[table] = MemoryStorage.TABLE_KEYS[table]
                     elif message['keys']:
                         self.keys[table] = message['keys']
                     else:
