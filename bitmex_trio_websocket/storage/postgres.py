@@ -2,7 +2,7 @@ import logging
 from typing import final
 
 import pendulum
-from slurry import Section
+from slurry.sections.abc import Section
 from trio_asyncio import open_loop
 import triopg
 
@@ -48,9 +48,9 @@ class PostgresStorage(Section):
                         await postgres.delete(table, message['data'])
                     for item in message['data']:
                         if 'symbol' in item:
-                            await output((item, item['symbol'], table, action))
+                            await output.send((item, item['symbol'], table, action))
                         else:
-                            await output((item, None, table, action))
+                            await output.send((item, None, table, action))
         finally:
             log.debug('Postgres storage engine exit.')            
 

@@ -17,7 +17,7 @@ class Parser(Section):
                     log.error('Unable to subscribe to %s. Error: "%s" Please check and restart.',
                                 message["request"]["args"][0], message["error"])
             elif 'action' in message:
-                await output(message)
+                await output.send(message)
             elif 'request' in message and 'op' in message['request'] and message['request']['op'] == 'cancelAllAfter':
                 log.debug('Dead mans switch reset. All open orders will be cancelled at %s.', message['cancelTime'])
             elif 'error' in message:

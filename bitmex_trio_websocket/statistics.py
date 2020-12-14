@@ -1,6 +1,6 @@
 import logging
 
-from slurry import Section
+from slurry.sections.abc import Section
 
 log = logging.getLogger(__name__)
 
