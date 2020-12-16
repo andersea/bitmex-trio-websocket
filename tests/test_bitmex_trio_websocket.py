@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """Tests for `bitmex_trio_websocket` package."""
+from bitmex_trio_websocket.exceptions import BitMEXWebsocketApiError
 import os
 from random import random
 
@@ -79,7 +80,7 @@ async def test_network_argument():
             assert False, 'BitMEXWebsocket.connect accepted erroneous network argument.'
 
 async def test_funding():
-    async with open_bitmex_websocket('mainnet') as ws:
+    async with open_bitmex_websocket('testnet') as ws:
         async with Pipeline.create(
             Group(2, ws.listen('funding'))
         ) as pipeline, pipeline.tap() as aiter:
@@ -91,3 +92,12 @@ async def test_funding():
                 assert len(bundle) > 1
                 return
             assert False, 'This should not happen.'
+
+async def test_spam_requests():
+    with pytest.raises(BitMEXWebsocketApiError):
+        async with open_bitmex_websocket('testnet') as ws:
+            async with Pipeline.create(
+                ws.listen('instrument', 'PAROTCOIN')
+            ) as pipeline, pipeline.tap() as aiter:
+                async for bundle in aiter:
+                    break

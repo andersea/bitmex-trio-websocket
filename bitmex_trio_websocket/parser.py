@@ -3,6 +3,8 @@ import logging
 from async_generator import aclosing
 from slurry.sections.abc import Section
 
+from .exceptions import BitMEXWebsocketApiError
+
 log = logging.getLogger(__name__)
 
 class Parser(Section):
@@ -21,5 +23,8 @@ class Parser(Section):
                     await output.send(message)
                 elif 'request' in message and 'op' in message['request'] and message['request']['op'] == 'cancelAllAfter':
                     log.debug('Dead mans switch reset. All open orders will be cancelled at %s.', message['cancelTime'])
+                elif 'error' in message:
+                    log.error('%s - Request: %s', message['error'], message['request'])
+                    raise BitMEXWebsocketApiError(message['status'], message['error'])
                 else:
                     log.warning('Received unknown message type: %s', message)
