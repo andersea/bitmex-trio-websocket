@@ -1,5 +1,9 @@
 # History
 
+## 0.11.1 (2020-12-25)
+
+* Upgrade slurry
+
 ## 0.11.0 (2020-12-16)
 
 * Will now raise BitMEXWebsocketApiError on any error message. This is a breaking change. Up to now, all errors were simply discarded. No error handling is attempted. Any error will cause the connection to be terminated and will raise BitMEXWebsocketApiError.
