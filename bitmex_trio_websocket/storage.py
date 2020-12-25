@@ -68,14 +68,14 @@ class Storage(Section):
                         # For the orderBook we send the complete book, since sending each item
                         # in turn doesn't make much sense, for such a big table.
                         symbol = message['data'][0]['symbol']
-                        await output.send((self.data[table][symbol], symbol, table, action))
+                        await output((self.data[table][symbol], symbol, table, action))
                     else:
                         # For all other tables, generate each individual item
                         for item in message['data']:
                             if 'symbol' in item:
-                                await output.send((item, item['symbol'], table, action))
+                                await output((item, item['symbol'], table, action))
                             else:
-                                await output.send((item, None, table, action))
+                                await output((item, None, table, action))
 
                 elif action == 'insert':
                     logger.debug('%s: inserting %s', table, message["data"])
@@ -87,9 +87,9 @@ class Storage(Section):
                     # Generate inserted items
                     for item in message['data']:
                         if 'symbol' in item:
-                            await output.send((item, item['symbol'], table, action))
+                            await output((item, item['symbol'], table, action))
                         else:
-                            await output.send((item, None, table, action))
+                            await output((item, None, table, action))
 
 
                 elif action == 'update':
@@ -106,9 +106,9 @@ class Storage(Section):
 
                             # Send back the updated item
                             if 'symbol' in item:
-                                await output.send((item, item['symbol'], table, action))
+                                await output((item, item['symbol'], table, action))
                             else:
-                                await output.send((item, None, table, action))
+                                await output((item, None, table, action))
                         except KeyError:
                             continue # No item found to update. Could happen before push
 
@@ -126,9 +126,9 @@ class Storage(Section):
                     # Send back the deletion fragment
                     for item in message['data']:
                         if 'symbol' in item:
-                            await output.send((item, item['symbol'], table, action))
+                            await output((item, item['symbol'], table, action))
                         else:
-                            await output.send((item, None, table, action))
+                            await output((item, None, table, action))
 
                 else:
                     raise Exception(f'Unknown action: {action}')
