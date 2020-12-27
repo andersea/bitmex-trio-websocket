@@ -697,7 +697,7 @@ description = "An async stream processing microframework"
 name = "slurry"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "0.9.0"
+version = "0.10.1"
 
 [package.dependencies]
 trio = ">=0.17.0,<0.18.0"
@@ -708,11 +708,11 @@ description = "A Websocket client section for the Slurry stream processing micro
 name = "slurry-websocket"
 optional = false
 python-versions = ">=3.6,<4.0"
-version = "0.2.4"
+version = "0.2.5"
 
 [package.dependencies]
 orjson = ">=3.4.5,<4.0.0"
-slurry = ">=0.9.0,<0.10.0"
+slurry = ">=0.10.1,<0.11.0"
 trio-websocket = ">=0.9.1,<0.10.0"
 
 [[package]]
@@ -1061,7 +1061,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [metadata]
-content-hash = "e8357a4070c1de411a7b77ed149945aa11b2597e7de5b186d2ad79e3f6e958e3"
+content-hash = "8530adeb64142edc5b873521a861c8c01f5535a5a64b5f04b1edf842103e7dea"
 lock-version = "1.0"
 python-versions = "^3.6"
 
@@ -1488,12 +1488,12 @@ six = [
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
 ]
 slurry = [
-    {file = "Slurry-0.9.0-py3-none-any.whl", hash = "sha256:b10e73f05a1b75c1a6aca647114d90199fca7251acb0b87663ae0f703835c7e1"},
-    {file = "Slurry-0.9.0.tar.gz", hash = "sha256:ac083d5035ac8770d799c92fd8f0b72374ee7e2d6838330065bf2286006f9458"},
+    {file = "Slurry-0.10.1-py3-none-any.whl", hash = "sha256:b55bdd66f371ed47d5139c9b95a9315a6b9dd27201075e80f22c412ddfbd4cc3"},
+    {file = "Slurry-0.10.1.tar.gz", hash = "sha256:e984fd2b53ee3b068f9de8f320245b30288800189379522e8dc7731d7e8efb1e"},
 ]
 slurry-websocket = [
-    {file = "slurry-websocket-0.2.4.tar.gz", hash = "sha256:4cc94078f45445f66bd9f4740c0590dedaee15e332267f19c6549276a31f19bc"},
-    {file = "slurry_websocket-0.2.4-py3-none-any.whl", hash = "sha256:520c8069d1f58689e6eb25a264b2514dd60b6f25b00409e24fac6b83b9925fd9"},
+    {file = "slurry-websocket-0.2.5.tar.gz", hash = "sha256:ca6299d77c3ad4d479f1d050d76cf129437c959f3a19252bebd4b1e36aaf4be1"},
+    {file = "slurry_websocket-0.2.5-py3-none-any.whl", hash = "sha256:10e91331615314b7c71590ebfd504a25d8ccbd8a2f961e84d117e7da50d19d22"},
 ]
 sniffio = [
     {file = "sniffio-1.2.0-py3-none-any.whl", hash = "sha256:471b71698eac1c2112a40ce2752bb2f4a4814c22a54a3eed3676bc0f5ca9f663"},
