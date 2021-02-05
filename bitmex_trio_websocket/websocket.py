@@ -25,6 +25,7 @@ class BitMEXWebsocket:
         self._send_channel = None
         self._subscriptions = Counter()
         self._connectionclosed = None
+        self._websocket = None
     
     async def listen(self, table: str, *symbols: Optional[Sequence[str]]):
         """
@@ -89,7 +90,8 @@ class BitMEXWebsocket:
             else:
                 sections = [receive_channel]
 
-            sections.append(Websocket(url, extra_headers=headers))
+            self._websocket = Websocket(url, extra_headers=headers)
+            sections.append(self._websocket)
             sections.append(Parser())
             sections.append(self.storage)
 
