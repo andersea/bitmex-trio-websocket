@@ -1,5 +1,16 @@
 # History
 
+## 0.12.0 (2021-02-05)
+
+The websocket is now forced to connect when the open_bitmex_websocket context is entered. Previously, the websocket
+would lazily wait for a subscription to be added, before it would connect. This creates problems because the user will
+probably want to know if the connection has succeeded, before any subscriptions are attempted. Especially so, if those
+subscriptions require an authenticated connection.
+
+* Upgrade slurry-websocket
+* Add check for websocket status, before adding a subscription. There was a check previously, but it would always succeed.
+* Slightly more verbose logging on startup and shutdown.
+
 ## 0.11.2 (2020-12-27)
 
 * Upgrade slurry
