@@ -24,7 +24,6 @@ class BitMEXWebsocket:
         self._pipeline = None
         self._send_channel = None
         self._subscriptions = Counter()
-        self._connectionclosed = None
         self._websocket = None
     
     async def listen(self, table: str, *symbols: Optional[Sequence[str]]):
@@ -33,7 +32,7 @@ class BitMEXWebsocket:
         
         Returns an async generator that yields messages from the subscribed channel.
         """
-        if self._connectionclosed is not None:
+        if self._websocket.closed is not None:
             raise trio.ClosedResourceError('Connection is closed.')
 
         listeners = [(table,)] if not symbols else [(table, symbol) for symbol in symbols]
@@ -101,7 +100,7 @@ class BitMEXWebsocket:
                 yield self
                 log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
                 pipeline.nursery.cancel_scope.cancel()
-            log.debug('BitMEXWebsocket closed.')
+            log.info('BitMEXWebsocket closed.')
 
         except OSError as ose:
             log.error('Connection attempt failed: %s', type(ose).__name__)
