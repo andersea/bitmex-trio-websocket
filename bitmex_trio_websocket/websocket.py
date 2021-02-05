@@ -90,12 +90,16 @@ class BitMEXWebsocket:
                 sections = [receive_channel]
 
             self._websocket = Websocket(url, extra_headers=headers)
+            parser = Parser()
             sections.append(self._websocket)
-            sections.append(Parser())
+            sections.append(parser)
             sections.append(self.storage)
 
             async with Pipeline.create(*sections) as pipeline:
                 self._pipeline = pipeline
+                # Force the websocket to connect
+                pipeline._enabled.set()
+                await parser._connected.wait()
                 log.info('BitMEXWebsocket open.')
                 yield self
                 log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')

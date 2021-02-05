@@ -2,15 +2,20 @@ import logging
 
 from async_generator import aclosing
 from slurry.sections.abc import Section
+from trio import Event
 
 from .exceptions import BitMEXWebsocketApiError
 
 log = logging.getLogger(__name__)
 
 class Parser(Section):
+    def __init__(self) -> None:
+        self._connected = Event()
+    
     async def pump(self, input, output):
         async for message in input:
             if 'info' in message:
+                self._connected.set()
                 log.debug('Connected to BitMEX realtime api.')
             elif 'subscribe' in message:
                 if message['success']:
