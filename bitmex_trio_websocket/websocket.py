@@ -96,7 +96,7 @@ class BitMEXWebsocket:
 
             async with Pipeline.create(*sections) as pipeline:
                 self._pipeline = pipeline
-                log.debug('Opening websocket connection.')
+                log.info('BitMEXWebsocket open.')
                 yield self
                 log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
                 pipeline.nursery.cancel_scope.cancel()
