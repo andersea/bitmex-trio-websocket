@@ -1,5 +1,9 @@
 # History
 
+## 0.12.1 (2021-02-23)
+
+* Upgrade slurry-websocket for better closure handling.
+
 ## 0.12.0 (2021-02-05)
 
 The websocket is now forced to connect when the open_bitmex_websocket context is entered. Previously, the websocket
