@@ -57,7 +57,7 @@ class BitMEXWebsocket:
             if self._subscriptions[listener] == 0:
                 log.debug('No more listeners on table: %s, symbol: %s. Unsubscribing.', table, symbols)
                 args.append(listener[0] if not symbols else ':'.join(listener))
-        if args:
+        if args and not self._websocket.closed:
             await self._send_channel.send({'op': 'unsubscribe', 'args': args})
 
     @asynccontextmanager
