@@ -1,5 +1,9 @@
 # History
 
+## 0.12.2 (2021-04-29)
+
+* Check if the websocket is still open, before attempting to unsubscribe from tables. No sense talking to a dead phone line.
+
 ## 0.12.1 (2021-02-23)
 
 * Upgrade slurry-websocket for better closure handling.
