@@ -6,12 +6,11 @@ import math
 import logging
 from typing import Optional, Sequence
 
-from async_generator import aclosing, asynccontextmanager
+from async_generator import asynccontextmanager
 import trio
 from slurry import Pipeline
 from slurry.sections import Merge, Repeat
 from slurry_websocket import Websocket, ConnectionClosed
-from wsproto.events import CloseConnection
 
 from .auth import generate_expires, generate_signature
 from .storage import Storage
