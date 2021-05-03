@@ -1,5 +1,12 @@
 # History
 
+## 0.13.0 (2021-05-03)
+
+New behaviour: If the websocket is closed remotely, bitmex-trio-websocket will now raise trio-websocket.ConnectionClosed,
+and include the underlying reason for the closure, on all open listeners. Previously, listener generator functions would
+simply end silently, and you would have to either assume that the websocket was remotely closed, or peek into the private
+_websocket attribute to check the underlying websocket state.
+
 ## 0.12.2 (2021-04-29)
 
 * Check if the websocket is still open, before attempting to unsubscribe from tables. No sense talking to a dead phone line.

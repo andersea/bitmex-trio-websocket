@@ -29,17 +29,23 @@ To install from PyPI:
     from async_generator import aclosing
 
     from bitmex_trio_websocket import open_bitmex_websocket
+    from trio_websocket import ConnectionClosed
 
     async def main():
         async with open_bitmex_websocket('testnet') as bws:
             async with aclosing(bws.listen('instrument')) as agen:
-                async for msg in agen:
-                    print(f'Received message, symbol: \'{msg["symbol"]}\', timestamp: \'{msg["timestamp"]}\'')
+                try:
+                    async for msg in agen:
+                        print(f'Received message, symbol: \'{msg["symbol"]}\', timestamp: \'{msg["timestamp"]}\'')
+                except ConnectionClosed:
+                    print(ConnectionClosed)
 
     if __name__ == '__main__':
         trio.run(main)
 
 This will print a sequence of dicts for each received item on inserts (including partials) or updates.
+
+Multiple tables can be listened to concurrently, by running each listener in a seperate task using nursery.start_soon.
 
 ## API
 
@@ -76,6 +82,8 @@ Subscribes to the channel and optionally a specific symbol. It is possible for m
 to be listening using the same subscription.
 
 Returns an async generator object that yields messages from the channel.
+
+If the websocket is closed, while a listener is still active, a [trio-websocket.ConnectionClosed](https://trio-websocket.readthedocs.io/en/stable/api.html#trio_websocket.ConnectionClosed) error will be raised by the generator, with the reason for the closure.
 
 **`table`** str
 
