@@ -37,8 +37,8 @@ To install from PyPI:
                 try:
                     async for msg in agen:
                         print(f'Received message, symbol: \'{msg["symbol"]}\', timestamp: \'{msg["timestamp"]}\'')
-                except ConnectionClosed:
-                    print(ConnectionClosed)
+                except ConnectionClosed as e:
+                    print(e)
 
     if __name__ == '__main__':
         trio.run(main)
