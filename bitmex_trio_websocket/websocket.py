@@ -11,6 +11,7 @@ import trio
 from slurry import Pipeline
 from slurry.sections import Merge, Repeat
 from slurry_websocket import Websocket, ConnectionClosed
+from wsproto.events import CloseConnection
 
 from .auth import generate_expires, generate_signature
 from .storage import Storage
@@ -33,7 +34,7 @@ class BitMEXWebsocket:
         Returns an async generator that yields messages from the subscribed channel.
         """
         if self._websocket.closed is not None:
-            raise trio.ClosedResourceError('Connection is closed.')
+            raise trio.BrokenResourceError('Connection is closed.')
 
         listeners = [(table,)] if not symbols else [(table, symbol) for symbol in symbols]
 
@@ -51,13 +52,17 @@ class BitMEXWebsocket:
                     yield item
 
         log.debug('Listener detached from table: %s, symbol: %s', table, symbols)
+
+        if self._websocket.closed:
+            raise ConnectionClosed(self._websocket.closed)
+
         args = []
         for listener in listeners:
             self._subscriptions[listener] -= 1
             if self._subscriptions[listener] == 0:
                 log.debug('No more listeners on table: %s, symbol: %s. Unsubscribing.', table, symbols)
                 args.append(listener[0] if not symbols else ':'.join(listener))
-        if args and not self._websocket.closed:
+        if args:
             await self._send_channel.send({'op': 'unsubscribe', 'args': args})
 
     @asynccontextmanager
