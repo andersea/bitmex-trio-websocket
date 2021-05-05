@@ -1,5 +1,10 @@
 # History
 
+## 0.13.1 (2021-05-05)
+
+* Raising on all listeners seems a bit noisy. Now raises once from the context manager, if close code != 1000.
+* Update dependencies.
+
 ## 0.13.0 (2021-05-03)
 
 New behaviour: If the websocket is closed remotely, bitmex-trio-websocket will now raise trio-websocket.ConnectionClosed,
