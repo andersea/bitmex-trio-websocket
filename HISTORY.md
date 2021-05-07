@@ -1,5 +1,9 @@
 # History
 
+## 0.13.2 (2021-05-06)
+
+* Revert 0.13.1 error handling to 0.13.0. It is most likely preferable that all listeners are notified of websocket closure.
+
 ## 0.13.1 (2021-05-05)
 
 * Raising on all listeners seems a bit noisy. Now raises once from the context manager, if close code != 1000.
