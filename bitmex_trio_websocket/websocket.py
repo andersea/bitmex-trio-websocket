@@ -25,6 +25,7 @@ class BitMEXWebsocket:
         self._send_channel = None
         self._subscriptions = Counter()
         self._websocket = None
+        self._connectionclosed = None
     
     async def listen(self, table: str, *symbols: Optional[Sequence[str]]):
         """
@@ -51,6 +52,13 @@ class BitMEXWebsocket:
                     yield item
 
         log.debug('Listener detached from table: %s, symbol: %s', table, symbols)
+
+        if self._connectionclosed:
+            raise self._connectionclosed
+
+        if self._websocket.closed and self._websocket.closed.code != 1000:
+            self._connectionclosed = ConnectionClosed(self._websocket.closed)
+            raise self._connectionclosed
 
         args = []
         for listener in listeners:
@@ -105,10 +113,6 @@ class BitMEXWebsocket:
                 yield self
                 log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
                 pipeline.nursery.cancel_scope.cancel()
-
-            # Raise on error
-            if self._websocket.closed and self._websocket.closed.code != 1000:
-                raise ConnectionClosed(self._websocket.closed)
 
             log.info('BitMEXWebsocket closed.')
 
