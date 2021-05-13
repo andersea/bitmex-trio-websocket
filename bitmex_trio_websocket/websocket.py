@@ -53,12 +53,8 @@ class BitMEXWebsocket:
 
         log.debug('Listener detached from table: %s, symbol: %s', table, symbols)
 
-        if self._connectionclosed:
-            raise self._connectionclosed
-
-        if self._websocket.closed and self._websocket.closed.code != 1000:
-            self._connectionclosed = ConnectionClosed(self._websocket.closed)
-            raise self._connectionclosed
+        if self._websocket.closed:
+            return
 
         args = []
         for listener in listeners:
