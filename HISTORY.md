@@ -1,5 +1,9 @@
 # History
 
+## 0.14.1 (2021-05-19)
+
+* Log websocket closure on errors.
+
 ## 0.14.0 (2021-05-13)
 
 Remote closure behaviour changed again. Closure will now result in a ConnectionClosed error being raised into the pipeline.
