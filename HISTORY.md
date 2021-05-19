@@ -1,8 +1,11 @@
 # History
 
-## 0.14.1 (2021-05-19)
+
+
+## 0.14.2 (2021-05-19)
 
 * Log websocket closure on errors.
+* Update trio
 
 ## 0.14.0 (2021-05-13)
 
