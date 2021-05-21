@@ -8,9 +8,10 @@ from typing import Optional, Sequence
 
 from async_generator import asynccontextmanager
 import trio
+from trio_websocket import ConnectionClosed
 from slurry import Pipeline
 from slurry.sections import Merge, Repeat
-from slurry_websocket import Websocket, ConnectionClosed
+from slurry_websocket import Websocket
 
 from .auth import generate_expires, generate_signature
 from .storage import Storage
@@ -110,8 +111,9 @@ class BitMEXWebsocket:
                     yield self
                     log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
                     pipeline.nursery.cancel_scope.cancel()
-                finally:
-                    log.info('BitMEXWebsocket closed.')
+                except ConnectionClosed as cls:
+                    log.info('BitMEXWebsocket closed (%d) %s.', cls.reason.code, cls.reason.name)
+                    raise
 
         except OSError as ose:
             log.error('Connection attempt failed: %s', type(ose).__name__)
