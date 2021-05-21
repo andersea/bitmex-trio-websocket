@@ -1,6 +1,8 @@
 # History
 
+## 0.14.3 (2021-05-21)
 
+* More detailed logging on websocket close.
 
 ## 0.14.2 (2021-05-19)
 
