@@ -4,6 +4,6 @@
 
 __author__ = """Anders Ellenshøj Andersen"""
 __email__ = 'andersa@atlab.dk'
-__version__ =  '__version__ = '0.14.3''
+__version__ = '0.14.3'
 
 from .websocket import open_bitmex_websocket, BitMEXWebsocket
