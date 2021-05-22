@@ -1,5 +1,10 @@
 # History
 
+## 0.14.4 (2021-05-22)
+
+* Raised non-1000 code websocket closures to warning log level.
+* Added info logging for normal closure
+
 ## 0.14.3 (2021-05-21)
 
 * More detailed logging on websocket close.
