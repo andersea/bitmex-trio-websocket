@@ -114,7 +114,7 @@ class BitMEXWebsocket:
                 except ConnectionClosed as cls:
                     log.warning('BitMEXWebsocket closed (%d) %s.', cls.reason.code, cls.reason.name)
                     raise          
-
+            log.info('BitMEXWebsocket closed.')  
         except OSError as ose:
             log.error('Connection attempt failed: %s', type(ose).__name__)
 
