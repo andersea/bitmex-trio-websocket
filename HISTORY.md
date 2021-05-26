@@ -1,5 +1,9 @@
 # History
 
+## 0.14.5 (2021-05-26)
+
+* Fix websocket closure warnings never emitted, due to incorrect try-except placement.
+
 ## 0.14.4 (2021-05-22)
 
 * Elevated non-1000 code websocket closures to warning log level.
