@@ -107,14 +107,13 @@ class BitMEXWebsocket:
                 pipeline._enabled.set()
                 await parser._connected.wait()
                 log.info('BitMEXWebsocket open.')
-                try:
-                    yield self
-                    log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
-                    pipeline.nursery.cancel_scope.cancel()
-                except ConnectionClosed as cls:
-                    log.warning('BitMEXWebsocket closed (%d) %s.', cls.reason.code, cls.reason.name)
-                    raise          
+                yield self
+                log.debug('BitMEXWebsocket context exit. Cancelling running tasks.')
+                pipeline.nursery.cancel_scope.cancel()
             log.info('BitMEXWebsocket closed.')  
+        except ConnectionClosed as cls:
+            log.warning('BitMEXWebsocket closed (%d) %s.', cls.reason.code, cls.reason.name)
+            raise          
         except OSError as ose:
             log.error('Connection attempt failed: %s', type(ose).__name__)
 
