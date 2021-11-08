@@ -472,7 +472,7 @@ version = "2.7.0"
 [[package]]
 category = "main"
 description = "C parser in Python"
-marker = "os_name == \"nt\" and implementation_name != \"pypy\" or os_name == \"nt\" and implementation_name != \"pypy\" and sys_platform == \"linux\""
+marker = "os_name == \"nt\" and implementation_name != \"pypy\" and (os_name == \"nt\" and implementation_name != \"pypy\" or sys_platform == \"linux\") or os_name == \"nt\" and implementation_name != \"pypy\" and sys_platform == \"linux\" or sys_platform == \"linux\""
 name = "pycparser"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
@@ -705,11 +705,11 @@ category = "main"
 description = "An async stream processing microframework"
 name = "slurry"
 optional = false
-python-versions = ">=3.6,<4.0"
-version = "1.1.0"
+python-versions = ">=3.7,<4.0"
+version = "1.1.1"
 
 [package.dependencies]
-trio = ">=0.18.0,<0.19.0"
+trio = ">=0.19.0,<0.20.0"
 
 [[package]]
 category = "main"
@@ -717,7 +717,7 @@ description = "A Websocket client section for the Slurry stream processing micro
 name = "slurry-websocket"
 optional = false
 python-versions = ">=3.7,<4.0"
-version = "0.4.0"
+version = "0.4.1"
 
 [package.dependencies]
 orjson = ">=3.6.4,<4.0.0"
@@ -906,7 +906,7 @@ description = "A friendly Python library for async concurrency and I/O"
 name = "trio"
 optional = false
 python-versions = ">=3.6"
-version = "0.18.0"
+version = "0.19.0"
 
 [package.dependencies]
 async-generator = ">=1.9"
@@ -1057,7 +1057,6 @@ h11 = ">=0.9.0,<1"
 [[package]]
 category = "dev"
 description = "Backport of pathlib-compatible object wrapper for zip files"
-marker = "python_version < \"3.8\""
 name = "zipp"
 optional = false
 python-versions = ">=3.6"
@@ -1068,7 +1067,7 @@ docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [metadata]
-content-hash = "969e7aa766f9e839e9a9a1c3ef400f7b91650eafad38917f610eb8bbebc97d0e"
+content-hash = "3d59185d03c1720c0db0144d631f78d1789aa04aedc1374316c519d75465f925"
 lock-version = "1.0"
 python-versions = "^3.7"
 
@@ -1570,12 +1569,12 @@ six = [
     {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 slurry = [
-    {file = "Slurry-1.1.0-py3-none-any.whl", hash = "sha256:52b4cfa9349da792079157ed4bbc4cd76db2d40cbd8b7a5459b7200629e526e1"},
-    {file = "Slurry-1.1.0.tar.gz", hash = "sha256:e1845dd6625c832bbd3988927e96bcef06b86d8ac13a9b1c1e8c43f6f01ee4eb"},
+    {file = "Slurry-1.1.1-py3-none-any.whl", hash = "sha256:0f37232436ffe5ebb84ba90ce082dcdee7c17596ad8228b795efba55e65f8232"},
+    {file = "Slurry-1.1.1.tar.gz", hash = "sha256:0135e6fb1b71356589a9ef69eadb44b924908acff9554c451cb40a00c8d2c969"},
 ]
 slurry-websocket = [
-    {file = "slurry-websocket-0.4.0.tar.gz", hash = "sha256:1a51587303b425871fc6630a8fd0067ce53e3efa4396b3a96a8edb45ecd04097"},
-    {file = "slurry_websocket-0.4.0-py3-none-any.whl", hash = "sha256:83e449a401dc8e09a310875375b063acaa9bead3c349a7bcef2be47802d67c8c"},
+    {file = "slurry-websocket-0.4.1.tar.gz", hash = "sha256:9771f64697a8354c29a842f3d7323f1e34b77a41e6b0e6069ce00f79d274ed02"},
+    {file = "slurry_websocket-0.4.1-py3-none-any.whl", hash = "sha256:1f5d29997cc77ed6da9a994e5eb88ed2a2384b372e3725a90ac800fb6c328353"},
 ]
 sniffio = [
     {file = "sniffio-1.2.0-py3-none-any.whl", hash = "sha256:471b71698eac1c2112a40ce2752bb2f4a4814c22a54a3eed3676bc0f5ca9f663"},
@@ -1630,8 +1629,8 @@ tqdm = [
     {file = "tqdm-4.62.3.tar.gz", hash = "sha256:d359de7217506c9851b7869f3708d8ee53ed70a1b8edbba4dbcb47442592920d"},
 ]
 trio = [
-    {file = "trio-0.18.0-py3-none-any.whl", hash = "sha256:a42af0634ba729cbfe8578be058750c6471dac19fbc7167ec6a3ca3f966fb424"},
-    {file = "trio-0.18.0.tar.gz", hash = "sha256:87a66ae61f27fe500c9024926a9ba482c07e1e0f56380b70a264d19c435ba076"},
+    {file = "trio-0.19.0-py3-none-any.whl", hash = "sha256:c27c231e66336183c484fbfe080fa6cc954149366c15dc21db8b7290081ec7b8"},
+    {file = "trio-0.19.0.tar.gz", hash = "sha256:895e318e5ec5e8cea9f60b473b6edb95b215e82d99556a03eb2d20c5e027efe1"},
 ]
 trio-websocket = [
     {file = "trio-websocket-0.9.2.tar.gz", hash = "sha256:a3d34de8fac26023eee701ed1e7bf4da9a8326b61a62934ec9e53b64970fd8fe"},
