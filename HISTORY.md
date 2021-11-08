@@ -1,6 +1,6 @@
 # History
 
-## 0.15.0 (2021-11-08)
+## 0.15.1 (2021-11-08)
 
 * Upgrade all dependencies. Python 3.7 is now minimum required version.
 
