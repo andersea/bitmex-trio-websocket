@@ -1,5 +1,9 @@
 # History
 
+## 0.15.0 (2021-11-08)
+
+* Upgrade all dependencies. Python 3.7 is now minimum required version.
+
 ## 0.14.5 (2021-05-26)
 
 * Fix websocket closure warnings never emitted, due to incorrect try-except placement.
