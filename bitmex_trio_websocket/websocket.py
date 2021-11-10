@@ -71,9 +71,9 @@ class BitMEXWebsocket:
         """Open a BitMEX websocket connection."""
         try:
             if network == 'mainnet':
-                url = 'wss://www.bitmex.com/realtime'
+                url = 'wss://ws.bitmex.com/realtime'
             else:
-                url = 'wss://testnet.bitmex.com/realtime'
+                url = 'wss://ws.testnet.bitmex.com/realtime'
 
             log.debug('Generating authentication headers.')
             # To auth to the WS using an API key, we generate a signature of a nonce and
