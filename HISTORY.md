@@ -1,5 +1,9 @@
 # History
 
+## 0.16.1 (2021-12-14)
+
+* Upgrade to slurry-websocket 0.4.2 and slurry 1.2.0.
+
 ## 0.16.0 (2021-11-10)
 
 * Switch to new endpoints for websocket connections, introduced on the 15th of october. See: https://blog.bitmex.com/api_announcement/change-of-websocket-endpoint/
